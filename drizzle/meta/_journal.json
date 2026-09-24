@@ -15,6 +15,13 @@
       "when": 1790272339596,
       "tag": "0001_smart_vertigo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790279268698,
+      "tag": "0002_low_loners",
+      "breakpoints": true
     }
   ]
 }

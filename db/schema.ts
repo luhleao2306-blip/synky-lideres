@@ -67,3 +67,50 @@ export const communicationResponses = sqliteTable("communication_responses", {
   consent: integer("consent", { mode: "boolean" }).notNull(),
   createdAt: text("created_at").notNull(),
 }, t => [uniqueIndex("idx_comm_response_unique").on(t.pairId,t.memberId)]);
+
+export const energyEntries = sqliteTable("energy_entries", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id),
+  memberId: text("member_id").notNull().references(() => members.id),
+  entryDate: text("entry_date").notNull(),
+  activityType: text("activity_type").notNull(),
+  activity: text("activity").notNull(),
+  energy: integer("energy").notNull(),
+  createdAt: text("created_at").notNull(),
+}, t => [index("idx_energy_member_date").on(t.companyId,t.memberId,t.entryDate)]);
+export const energyShares = sqliteTable("energy_shares", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id),
+  memberId: text("member_id").notNull().references(() => members.id),
+  leaderId: text("leader_id").notNull().references(() => members.id),
+  createdAt: text("created_at").notNull(),
+}, t => [uniqueIndex("idx_energy_share_unique").on(t.memberId,t.leaderId)]);
+export const careerRuns = sqliteTable("career_runs", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id),
+  memberId: text("member_id").notNull().references(() => members.id),
+  choices: text("choices").notNull(),
+  createdAt: text("created_at").notNull(),
+}, t => [index("idx_career_member").on(t.companyId,t.memberId)]);
+export const thermometerTracks = sqliteTable("thermometer_tracks", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => companies.id),
+  leaderId: text("leader_id").notNull().references(() => members.id),
+  cycleId: text("cycle_id").notNull().references(() => mirrorCycles.id),
+  dimensions: text("dimensions").notNull(),
+  createdAt: text("created_at").notNull(),
+}, t => [uniqueIndex("idx_thermometer_cycle").on(t.cycleId)]);
+export const thermometerRounds = sqliteTable("thermometer_rounds", {
+  id: text("id").primaryKey(),
+  trackId: text("track_id").notNull().references(() => thermometerTracks.id),
+  status: text("status", { enum: ["open","closed"] }).notNull(),
+  createdAt: text("created_at").notNull(),
+  closedAt: text("closed_at"),
+}, t => [index("idx_thermometer_round_track").on(t.trackId)]);
+export const thermometerResponses = sqliteTable("thermometer_responses", {
+  id: text("id").primaryKey(),
+  roundId: text("round_id").notNull().references(() => thermometerRounds.id),
+  respondentId: text("respondent_id").notNull().references(() => members.id),
+  scores: text("scores").notNull(),
+  createdAt: text("created_at").notNull(),
+}, t => [uniqueIndex("idx_thermometer_response_unique").on(t.roundId,t.respondentId)]);

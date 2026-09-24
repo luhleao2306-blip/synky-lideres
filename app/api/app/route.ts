@@ -2,6 +2,7 @@ import { env } from "cloudflare:workers";
 import { getChatGPTUser } from "../../chatgpt-auth";
 import { communicationTopics, decisionFeedback, mirrorQuestions, scenarios } from "../../../lib/experiences";
 import { calculateMirrorAggregate } from "../../../lib/results";
+import { careerPriorities, energyTypes, summarizeEnergy } from "../../../lib/additional-experiences";
 
 type Row = Record<string, unknown>;
 const json = (body: unknown, status=200) => Response.json(body,{status});
@@ -15,6 +16,7 @@ const fail = (message:string,status=400) => json({error:message},status);
 const parse = (value:unknown) => { try{return JSON.parse(String(value))}catch{return null} };
 const validScores = (x:unknown) => Array.isArray(x)&&x.length===mirrorQuestions.length&&x.every(v=>v===null||(Number.isInteger(v)&&v>=1&&v<=5));
 const validPreferences = (x:unknown) => Array.isArray(x)&&x.length===communicationTopics.length&&x.every(v=>v===0||v===1);
+const validEnergy = (x:unknown) => Number.isInteger(x)&&Number(x)>=-2&&Number(x)<=2;
 const safeText = (x:unknown,max=120) => typeof x==="string"?x.trim().slice(0,max):"";
 const emailText = (x:unknown) => safeText(x,254).toLowerCase();
 async function member(userId:string) {return one("SELECT m.*, c.name AS company_name FROM members m JOIN companies c ON c.id=m.company_id WHERE m.user_id=? ORDER BY m.rowid LIMIT 1",userId)}
@@ -50,7 +52,39 @@ export async function GET(request:Request) {
       return {id:pair.id,status:pair.status,createdAt:pair.created_at,partnerEmail:pair.partner_email,answered:!!mine,ready,preferences:ready?preferences:undefined,agreement:ready?pair.agreement:undefined};
     }));
     const pendingCommunication=await all("SELECT i.token,i.reference_id,p.created_at FROM invites i JOIN communication_pairs p ON p.id=i.reference_id WHERE i.company_id=? AND i.email=? AND i.type='communication' AND i.used_at IS NULL AND i.expires_at>? AND p.status='pending'",companyId,user.email.toLowerCase(),now());
-    return json({user:{name:user.displayName,email:user.email},membership:{id:memberId,role:m.role,companyId,companyName:m.company_name},mirrors,mirrorRequests,runs:runs.map(r=>({...r,choices:parse(r.choices)})),pairs,pendingCommunication,invite:invite?{type:invite.type,token,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite});
+    const energyRows=await all("SELECT id,entry_date AS entryDate,activity_type AS activityType,activity,energy,created_at AS createdAt FROM energy_entries WHERE company_id=? AND member_id=? AND entry_date>=? ORDER BY entry_date DESC,created_at DESC LIMIT 100",companyId,memberId,new Date(Date.now()-30*864e5).toISOString().slice(0,10));
+    const energySummary=summarizeEnergy(energyRows.filter(row=>String(row.entryDate)>=new Date(Date.now()-14*864e5).toISOString().slice(0,10)).map(row=>({entryDate:String(row.entryDate),activityType:String(row.activityType),energy:Number(row.energy)})));
+    const energyShares=await all("SELECT s.id,l.name,l.email FROM energy_shares s JOIN members l ON l.id=s.leader_id AND l.company_id=s.company_id WHERE s.company_id=? AND s.member_id=? ORDER BY s.created_at DESC",companyId,memberId);
+    const sharedEnergyRows=await all("SELECT s.id,s.member_id,m.name,m.email FROM energy_shares s JOIN members m ON m.id=s.member_id AND m.company_id=s.company_id WHERE s.company_id=? AND s.leader_id=? ORDER BY s.created_at DESC",companyId,memberId);
+    const sharedEnergy=await Promise.all(sharedEnergyRows.map(async share=>{
+      const rows=await all("SELECT entry_date AS entryDate,activity_type AS activityType,energy FROM energy_entries WHERE company_id=? AND member_id=? AND entry_date>=?",companyId,share.member_id,new Date(Date.now()-14*864e5).toISOString().slice(0,10));
+      const summary=summarizeEnergy(rows.map(row=>({entryDate:String(row.entryDate),activityType:String(row.activityType),energy:Number(row.energy)})));
+      return {id:share.id,name:share.name,email:share.email,total:summary.total,categories:summary.categories};
+    }));
+    const careerRuns=(await all("SELECT id,choices,created_at AS createdAt FROM career_runs WHERE company_id=? AND member_id=? ORDER BY created_at DESC LIMIT 20",companyId,memberId)).map(row=>({id:row.id,choices:parse(row.choices),createdAt:row.createdAt}));
+    const trackRows=await all("SELECT * FROM thermometer_tracks WHERE company_id=? AND leader_id=? ORDER BY created_at DESC",companyId,memberId);
+    const thermometerTracks=await Promise.all(trackRows.map(async track=>{
+      const dimensions=parse(track.dimensions) as number[];
+      const rounds=await all("SELECT * FROM thermometer_rounds WHERE track_id=? ORDER BY created_at ASC",track.id);
+      const publicRounds=await Promise.all(rounds.map(async round=>{
+        const answers=await all("SELECT scores FROM thermometer_responses WHERE round_id=?",round.id);
+        const scores=answers.map(answer=>parse(answer.scores) as (number|null)[]).filter(Array.isArray);
+        return {id:round.id,status:round.status,createdAt:round.created_at,closedAt:round.closed_at,responseCount:scores.length,scores:calculateMirrorAggregate(String(round.status),scores,dimensions.length)};
+      }));
+      return {id:track.id,cycleId:track.cycle_id,dimensions,createdAt:track.created_at,rounds:publicRounds};
+    }));
+    const thermometerRequests=await all("SELECT r.id AS roundId,t.dimensions,t.created_at AS createdAt FROM thermometer_tracks t JOIN thermometer_rounds r ON r.track_id=t.id AND r.status='open' JOIN mirror_responses original ON original.cycle_id=t.cycle_id AND original.respondent_id=? LEFT JOIN thermometer_responses answered ON answered.round_id=r.id AND answered.respondent_id=? WHERE t.company_id=? AND answered.id IS NULL ORDER BY r.created_at DESC",memberId,memberId,companyId);
+    const canManage=["admin","rh"].includes(String(m.role));
+    const people=canManage?await all("SELECT id,name,email,role FROM members WHERE company_id=? ORDER BY name",companyId):[];
+    const pendingInvites=canManage?await all("SELECT email,type,role,expires_at AS expiresAt,created_at AS createdAt FROM invites WHERE company_id=? AND type='member' AND used_at IS NULL AND expires_at>? ORDER BY created_at DESC LIMIT 30",companyId,now()):[];
+    const companyStats=canManage?{
+      people:people.length,
+      mirrorCycles:Number((await one("SELECT COUNT(*) AS n FROM mirror_cycles WHERE company_id=?",companyId))?.n||0),
+      decisionRuns:Number((await one("SELECT COUNT(*) AS n FROM decision_runs WHERE company_id=?",companyId))?.n||0),
+      careerRuns:Number((await one("SELECT COUNT(*) AS n FROM career_runs WHERE company_id=?",companyId))?.n||0),
+      thermometerTracks:Number((await one("SELECT COUNT(*) AS n FROM thermometer_tracks WHERE company_id=?",companyId))?.n||0),
+    }:null;
+    return json({user:{name:user.displayName,email:user.email},membership:{id:memberId,role:m.role,companyId,companyName:m.company_name},mirrors,mirrorRequests,runs:runs.map(r=>({...r,choices:parse(r.choices)})),pairs,pendingCommunication,energyEntries:energyRows,energySummary,energyShares,sharedEnergy,careerRuns,thermometerTracks,thermometerRequests:thermometerRequests.map(row=>({...row,dimensions:parse(row.dimensions)})),people,pendingInvites,companyStats,invite:invite?{type:invite.type,token,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite});
   } catch(e){console.error("app get failed",e);return fail("Não foi possível carregar os dados. Tente novamente.",500)}
 }
 export async function POST(request:Request) {
@@ -90,6 +124,14 @@ export async function POST(request:Request) {
       if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||!["rh","leader","participant"].includes(newRole))return fail("Confira o e-mail e o perfil.");
       const token=id();await run("INSERT INTO invites(token,company_id,email,type,role,expires_at,created_at) VALUES(?,?,?,?,?,?,?)",token,companyId,email,"member",newRole,new Date(Date.now()+7*864e5).toISOString(),now());
       return json({ok:true,link:`${new URL(request.url).origin}/app?invite=${token}`});
+    }
+    if(action==="change_member_role") {
+      if(role!=="admin")return fail("Apenas o administrador pode alterar perfis.",403);
+      const target=await one("SELECT id,role FROM members WHERE id=? AND company_id=?",p.memberId,companyId);
+      const newRole=safeText(p.role);
+      if(!target||target.id===memberId||target.role==="admin"||!["rh","leader","participant"].includes(newRole))return fail("Não é possível alterar este perfil.",403);
+      await run("UPDATE members SET role=? WHERE id=? AND company_id=?",newRole,target.id,companyId);
+      return json({ok:true});
     }
     if(action==="create_mirror") {
       if(!["admin","rh","leader"].includes(role))return fail("Seu perfil não pode iniciar esta experiência.",403);
@@ -168,6 +210,75 @@ export async function POST(request:Request) {
       if(!pair||pair.status!=="ready")return fail("Comparação não disponível.",404);
       const agreement=safeText(p.agreement,600);if(!agreement)return fail("Escreva um acordo prático.");
       await run("UPDATE communication_pairs SET agreement=? WHERE id=? AND company_id=?",agreement,pair.id,companyId);
+      return json({ok:true});
+    }
+    if(action==="add_energy") {
+      const activity=safeText(p.activity,120),activityType=safeText(p.activityType,40),entryDate=safeText(p.entryDate,10);
+      const earliest=new Date(Date.now()-14*864e5).toISOString().slice(0,10),latest=new Date(Date.now()+864e5).toISOString().slice(0,10);
+      if(!activity||!energyTypes.includes(activityType as typeof energyTypes[number])||!validEnergy(p.energy)||!/^\d{4}-\d{2}-\d{2}$/.test(entryDate)||entryDate<earliest||entryDate>latest)return fail("Revise a atividade, a data e a energia percebida.");
+      await run("INSERT INTO energy_entries(id,company_id,member_id,entry_date,activity_type,activity,energy,created_at) VALUES(?,?,?,?,?,?,?,?)",id(),companyId,memberId,entryDate,activityType,activity,Number(p.energy),now());
+      return json({ok:true});
+    }
+    if(action==="delete_energy") {
+      const result=await run("DELETE FROM energy_entries WHERE id=? AND company_id=? AND member_id=?",p.entryId,companyId,memberId);
+      if(!result.meta.changes)return fail("Registro não encontrado.",404);
+      return json({ok:true});
+    }
+    if(action==="share_energy") {
+      const email=emailText(p.email),leader=await one("SELECT id FROM members WHERE company_id=? AND email=? AND role IN ('admin','rh','leader')",companyId,email);
+      if(!leader||leader.id===memberId)return fail("Escolha um líder ou RH da sua empresa.");
+      const existing=await one("SELECT id FROM energy_shares WHERE company_id=? AND member_id=? AND leader_id=?",companyId,memberId,leader.id);
+      if(existing)return json({ok:true});
+      await run("INSERT INTO energy_shares(id,company_id,member_id,leader_id,created_at) VALUES(?,?,?,?,?)",id(),companyId,memberId,leader.id,now());
+      return json({ok:true});
+    }
+    if(action==="revoke_energy_share") {
+      const result=await run("DELETE FROM energy_shares WHERE id=? AND company_id=? AND member_id=?",p.shareId,companyId,memberId);
+      if(!result.meta.changes)return fail("Compartilhamento não encontrado.",404);
+      return json({ok:true});
+    }
+    if(action==="save_career") {
+      const choices=p.choices as number[];
+      if(!careerPriorities(choices))return fail("Responda todos os dilemas.");
+      await run("INSERT INTO career_runs(id,company_id,member_id,choices,created_at) VALUES(?,?,?,?,?)",id(),companyId,memberId,JSON.stringify(choices),now());
+      return json({ok:true});
+    }
+    if(action==="create_thermometer") {
+      if(!["admin","rh","leader"].includes(role))return fail("Seu perfil não pode iniciar este acompanhamento.",403);
+      const cycle=await one("SELECT id,status FROM mirror_cycles WHERE id=? AND company_id=? AND leader_id=?",p.cycleId,companyId,memberId);
+      if(!cycle||cycle.status!=="closed")return fail("Conclua um ciclo do Espelho primeiro.");
+      const participants=await one("SELECT COUNT(*) AS n FROM mirror_responses WHERE cycle_id=?",cycle.id);
+      if(Number(participants?.n)<5)return fail("O ciclo precisa de cinco respostas para acompanhar a percepção do time.");
+      const dimensions=p.dimensions as number[];
+      if(!Array.isArray(dimensions)||dimensions.length<1||dimensions.length>3||new Set(dimensions).size!==dimensions.length||dimensions.some(v=>!Number.isInteger(v)||v<0||v>=mirrorQuestions.length))return fail("Escolha de um a três comportamentos.");
+      if(await one("SELECT id FROM thermometer_tracks WHERE cycle_id=?",cycle.id))return fail("Este ciclo já tem acompanhamento.");
+      const trackId=id(),roundId=id();
+      await db().batch([
+        db().prepare("INSERT INTO thermometer_tracks(id,company_id,leader_id,cycle_id,dimensions,created_at) VALUES(?,?,?,?,?,?)").bind(trackId,companyId,memberId,cycle.id,JSON.stringify(dimensions),now()),
+        db().prepare("INSERT INTO thermometer_rounds(id,track_id,status,created_at) VALUES(?,?,?,?)").bind(roundId,trackId,"open",now()),
+      ]);
+      return json({ok:true});
+    }
+    if(action==="respond_thermometer") {
+      const round=await one("SELECT r.id,t.company_id,t.cycle_id,t.dimensions,t.leader_id FROM thermometer_rounds r JOIN thermometer_tracks t ON t.id=r.track_id WHERE r.id=? AND r.status='open' AND t.company_id=?",p.roundId,companyId);
+      if(!round||round.leader_id===memberId||!await one("SELECT id FROM mirror_responses WHERE cycle_id=? AND respondent_id=?",round.cycle_id,memberId))return fail("Este acompanhamento não está disponível para você.",403);
+      const dimensions=parse(round.dimensions) as number[],scores=p.scores as unknown;
+      if(!Array.isArray(scores)||scores.length!==dimensions.length||scores.some(v=>v!==null&&(!Number.isInteger(v)||v<1||v>5)))return fail("Revise as respostas do acompanhamento.");
+      if(await one("SELECT id FROM thermometer_responses WHERE round_id=? AND respondent_id=?",round.id,memberId))return fail("Você já respondeu esta rodada.",409);
+      await run("INSERT INTO thermometer_responses(id,round_id,respondent_id,scores,created_at) VALUES(?,?,?,?,?)",id(),round.id,memberId,JSON.stringify(scores),now());
+      return json({ok:true});
+    }
+    if(action==="close_thermometer_round") {
+      const round=await one("SELECT r.id FROM thermometer_rounds r JOIN thermometer_tracks t ON t.id=r.track_id WHERE r.id=? AND r.status='open' AND t.company_id=? AND t.leader_id=?",p.roundId,companyId,memberId);
+      if(!round)return fail("Rodada não encontrada.",404);
+      await run("UPDATE thermometer_rounds SET status='closed',closed_at=? WHERE id=?",now(),round.id);
+      return json({ok:true});
+    }
+    if(action==="new_thermometer_round") {
+      const track=await one("SELECT id FROM thermometer_tracks WHERE id=? AND company_id=? AND leader_id=?",p.trackId,companyId,memberId);
+      if(!track)return fail("Acompanhamento não encontrado.",404);
+      if(await one("SELECT id FROM thermometer_rounds WHERE track_id=? AND status='open'",track.id))return fail("Encerre a rodada atual antes de começar outra.");
+      await run("INSERT INTO thermometer_rounds(id,track_id,status,created_at) VALUES(?,?,?,?)",id(),track.id,"open",now());
       return json({ok:true});
     }
     return fail("Ação desconhecida.",404);
