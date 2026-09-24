@@ -37,7 +37,7 @@ export async function GET(request:Request) {
     const m=await member(user.userId,companySelection);
     const memberships=await all("SELECT m.company_id AS companyId,m.role,c.name AS companyName FROM members m JOIN companies c ON c.id=m.company_id WHERE m.user_id=? ORDER BY c.name",user.userId);
     const platformAdmin=user.email.toLowerCase()==="contato@somus.group"||process.env.NODE_ENV==="development";
-    if(!m){if(companySelection&&!invite&&memberships.length)return fail("Você não tem acesso a esta empresa.",403);return json({needsSetup:!(await one("SELECT id FROM companies LIMIT 1")),invite:invite?{type:invite.type,token,companyId:invite.company_id,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite,user:{name:user.displayName,email:user.email},memberships,platformAdmin})}
+    if(!m){if(companySelection&&!invite&&memberships.length)return fail("Você não tem acesso a esta empresa.",403);return json({needsSetup:platformAdmin&&!(await one("SELECT id FROM companies LIMIT 1")),invite:invite?{type:invite.type,token,companyId:invite.company_id,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite,user:{name:user.displayName,email:user.email},memberships,platformAdmin})}
     const companyId=String(m.company_id),memberId=String(m.id);
     const cycles=await all("SELECT * FROM mirror_cycles WHERE company_id=? AND leader_id=? ORDER BY created_at DESC",companyId,memberId);
     const mirrors=await Promise.all(cycles.map(async cycle=>{
