@@ -1,0 +1,1 @@
+ALTER TABLE `communication_pairs` ADD `agreement` text DEFAULT '' NOT NULL;
