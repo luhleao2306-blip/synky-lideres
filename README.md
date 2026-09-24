@@ -11,7 +11,8 @@ Plataforma de experiências de desenvolvimento humano em português do Brasil.
 - **Bússola de Carreira:** oito dilemas, prioridades e tensões para reflexão, novas tentativas e comparação com o histórico pessoal.
 - **Termômetro de Liderança:** seleção de até três comportamentos após um Espelho concluído, rodadas respondidas pela mesma equipe e evolução agregada liberada só após encerramento e cinco respostas válidas por item.
 - **Equipe:** convites, lista de pessoas, visão de participação da empresa e alteração de perfil pelo administrador.
-- Empresa, perfis e dados persistidos em D1; API aplica autorização por empresa e papel.
+- **Administração:** criação e alternância entre empresas pelo proprietário; nome e módulos configuráveis pelo administrador de cada empresa.
+- Empresas, perfis e dados persistidos em D1; API aplica autorização por empresa e papel.
 
 O primeiro acesso com a conta proprietária `contato@somus.group` configura a empresa inicial. Convites são gerados como links para compartilhamento manual e expiram após sete dias (acesso à empresa) ou quatorze dias (experiências). Participantes precisam entrar com o mesmo e-mail do convite.
 
@@ -23,4 +24,4 @@ O primeiro acesso com a conta proprietária `contato@somus.group` configura a em
 
 ## Limites atuais
 
-O ambiente inicial atende uma empresa por conta. A gestão de múltiplas empresas pelo mesmo administrador e o envio automático de convites por e-mail ainda não estão configurados. Convites funcionam por links copiados da plataforma. A integração com o DISC anterior foi retirada do escopo a pedido do proprietário.
+O envio automático de convites por e-mail ainda não está configurado. Convites funcionam por links copiados da plataforma. A integração com o DISC anterior foi retirada do escopo a pedido do proprietário.

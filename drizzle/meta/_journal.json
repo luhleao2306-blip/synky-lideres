@@ -22,6 +22,13 @@
       "when": 1790279268698,
       "tag": "0002_low_loners",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1790281229507,
+      "tag": "0003_classy_cerebro",
+      "breakpoints": true
     }
   ]
 }

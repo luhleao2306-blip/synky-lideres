@@ -1,0 +1,1 @@
+ALTER TABLE `companies` ADD `modules` text DEFAULT '{}' NOT NULL;
