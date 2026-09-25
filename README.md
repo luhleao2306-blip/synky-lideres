@@ -2,6 +2,8 @@
 
 Plataforma de experiências de desenvolvimento humano em português do Brasil.
 
+A página pública tem catálogo, páginas próprias das seis experiências e uma página para empresas. Os links entre páginas usam navegação HTML nativa porque a navegação cliente do `next/link` falha no runtime vinext da hospedagem Sites.
+
 ## Funcional nesta versão
 
 - **Espelho do Líder:** autoavaliação, ciclo, convites vinculados a e-mail, resposta do time, limite de cinco pessoas, comparação agregada após encerramento e ação escolhida.
