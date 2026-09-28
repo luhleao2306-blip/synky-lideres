@@ -1,7 +1,20 @@
 import PublicNavigation from "@/components/public-navigation";
 import PublicFooter from "@/components/public-footer";
-import { DecisionPreview, MirrorPreview } from "@/components/public-experience-preview";
-import { ArrowRight, ArrowUpRight, BookOpen, LockKeyhole, UsersRound } from "lucide-react";
+import PublicExperienceStudio from "@/components/public-experience-studio";
+import { publicExperiences } from "@/lib/public-experiences";
+import { scenarios } from "@/lib/experiences";
+import { ArrowRight, ArrowUpRight, BookOpen, Clock3, LockKeyhole, UsersRound } from "lucide-react";
+
+const featured = [
+  { ...publicExperiences[0], tagline: "Descubra como sua equipe percebe você.", format: "Com seu time" },
+  { ...publicExperiences[1], tagline: "Pratique escolhas antes do próximo desafio.", format: "Simulação" },
+  { ...publicExperiences[2], tagline: "Transforme diferenças em bons acordos.", format: "Em dupla" },
+];
+const moreExperiences = [
+  { ...publicExperiences[3], focus: "SUA ROTINA" },
+  { ...publicExperiences[4], focus: "SEUS CAMINHOS" },
+  { ...publicExperiences[5], focus: "SUA EVOLUÇÃO" },
+];
 
 export default function Home() {
   return <div className="site vitrine-site"><PublicNavigation active="home"/>
@@ -10,10 +23,17 @@ export default function Home() {
 
       <div className="vitrine-proof" aria-label="O que você encontra na plataforma"><div><span><BookOpen size={22}/></span><strong>06</strong><small>experiências práticas</small></div><div><span><UsersRound size={22}/></span><strong>Participação</strong><small>da equipe</small></div><div><span><LockKeyhole size={22}/></span><strong>Evolução</strong><small>com privacidade</small></div></div>
 
-      <section className="vitrine-decisions" aria-labelledby="vitrine-decisions-title"><div className="vitrine-decisions-copy"><span className="vitrine-eyebrow">DECISÕES SOB PRESSÃO</span><h2 id="vitrine-decisions-title">Uma decisão pode mudar <em>tudo.</em></h2><p>Experimente uma situação que faz parte da plataforma.</p><a href="/experiencias/decisions">Conhecer a experiência <ArrowRight size={18}/></a></div><DecisionPreview/></section>
+      <section className="journey-experiences" aria-labelledby="journey-experiences-title">
+        <div className="journey-section-heading"><div><span className="journey-eyebrow">EXPERIÊNCIAS PARA O SEU MOMENTO</span><h2 id="journey-experiences-title">Encontre seu<br/><em>próximo passo.</em></h2></div><a className="journey-outline-link" href="#experimente">Quero experimentar <ArrowRight size={17}/></a></div>
+        <div className="journey-featured">{featured.map(item=><a className={`journey-experience-card journey-card-${item.slug}`} href={`/experiencias/${item.slug}`} key={item.slug}>
+          {item.slug === "decisions" ? <div className="journey-scenario-art"><span>CENÁRIOS DA EXPERIÊNCIA</span>{[scenarios[0],scenarios[1],scenarios[4]].map((scenario,index)=><div key={scenario.id}><small>{String(index+1).padStart(2,"0")}</small><strong>{scenario.title}</strong><ArrowUpRight size={15}/></div>)}<p>O que você faria?</p></div> : <div className="journey-card-photo"><img src={item.image} alt={item.imageAlt} loading="lazy"/><span>{item.format}</span></div>}
+          <div className="journey-card-content"><span className="journey-card-number">{item.number} / EXPERIÊNCIA</span><h3>{item.title}</h3><p>{item.tagline}</p><div className="journey-card-bottom"><span><Clock3 size={13}/>{item.duration}</span><span className="journey-card-arrow"><ArrowUpRight size={21}/></span></div></div>
+        </a>)}</div>
+        <div className="journey-more"><span>MAIS PARA EXPLORAR</span><div>{moreExperiences.map(item=><a href={`/experiencias/${item.slug}`} key={item.slug}><span><small>{item.focus}</small><strong>{item.title}</strong></span><ArrowUpRight size={18}/></a>)}</div></div>
+      </section>
 
-      <section className="vitrine-mirror" id="experiencia" aria-labelledby="vitrine-mirror-title"><div className="vitrine-mirror-copy"><span className="vitrine-eyebrow">01 / ESPELHO DO LÍDER</span><h2 id="vitrine-mirror-title">O que você vê.<br/><em>O que o time vive.</em></h2><p>Uma pergunta pode abrir uma conversa melhor.</p><a href="/experiencias/mirror">Conhecer o Espelho do Líder <ArrowRight size={18}/></a></div><MirrorPreview/></section>
+      <PublicExperienceStudio/>
 
-      <section className="vitrine-close" aria-labelledby="vitrine-close-title"><div><span className="vitrine-eyebrow">PARA LÍDERES, EQUIPES E EMPRESAS</span><h2 id="vitrine-close-title">Leve a evolução<br/><em>para toda a equipe.</em></h2></div><div className="vitrine-close-side"><p>Convide pessoas, acompanhe experiências e encontre próximos passos com privacidade.</p><div><a className="vitrine-button" href="/empresas">Levar para minha equipe <ArrowRight size={18}/></a><a className="vitrine-text-link" href="/experiencias">Ver as experiências <ArrowUpRight size={17}/></a></div></div></section>
+      <section className="journey-company" aria-labelledby="journey-company-title"><div className="journey-company-heading"><span className="journey-eyebrow">SYNKY PARA EMPRESAS</span><h2 id="journey-company-title">Uma pessoa começa.<br/><em>A equipe evolui junto.</em></h2><p>Um espaço para convidar, desenvolver e acompanhar suas lideranças.</p></div><div className="journey-company-actions"><a className="journey-company-primary" href="/empresas">Conhecer a solução para equipes <ArrowRight size={18}/></a><a className="journey-company-secondary" href="/app">Acessar a plataforma <ArrowUpRight size={16}/></a></div><div className="journey-company-foot"><span>Convites por pessoa</span><span>Experiências individuais e em equipe</span><span>Resultados conforme cada perfil</span></div></section>
     </main><PublicFooter/></div>;
 }
