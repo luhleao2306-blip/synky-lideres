@@ -25,7 +25,7 @@ const roleName: Record<string, string> = { admin: "Administrador", rh: "RH", lea
 const date = (value: string) => new Date(value).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
 const energyLabel = (value: number) => value > 0 ? `+${value} · deu energia` : value < 0 ? `${value} · consumiu energia` : "0 · neutro";
 
-export default function ResultsPanel({ isMaster, companyId }: { isMaster: boolean; companyId: string }) {
+export default function ResultsPanel({ isMaster, isGuest, companyId }: { isMaster: boolean; isGuest: boolean; companyId: string }) {
   const [directory, setDirectory] = useState<Directory | null>(null);
   const [detail, setDetail] = useState<Detail | null>(null);
   const [search, setSearch] = useState("");
@@ -73,6 +73,7 @@ export default function ResultsPanel({ isMaster, companyId }: { isMaster: boolea
       <div><span className="kicker">{isMaster ? "ADMINISTRAÇÃO MASTER" : "SEUS REGISTROS"}</span><h1>{isMaster ? "Resultados da plataforma." : "Meus resultados."}</h1><p>{isMaster ? "Consulte os resultados de cada pessoa em todos os espaços da Synky Líderes." : "Tudo o que você concluiu e registrou, organizado por experiência para revisitar quando quiser."}</p></div>
       <div className="results-hero-mark"><ChartNoAxesCombined size={30}/><span>{isMaster ? "Visão completa" : "Sua trajetória"}</span></div>
     </header>
+    {isGuest && <div className="results-admin-access"><ShieldCheck size={20}/><span><strong>Administra a Synky Líderes?</strong><small>Entre com sua conta administrativa para consultar os resultados de todos os espaços.</small></span><a href="/signin-with-chatgpt?return_to=%2Fapp%3Fview%3Dresults" target="_top">Entrar <ArrowRight size={15}/></a></div>}
     {error && <div className="alert error-message" role="alert">{error}</div>}
     {isMaster && !selected ? <section className="results-directory">
       <div className="results-section-title"><div><span className="kicker">PESSOAS E ESPAÇOS</span><h2>Encontre um resultado</h2><p>Selecione uma pessoa para ver seu histórico e as respostas concluídas.</p></div><span className="results-count">{directory?.total ?? "—"} pessoa{directory?.total === 1 ? "" : "s"}</span></div>
