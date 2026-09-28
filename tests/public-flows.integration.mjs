@@ -35,6 +35,7 @@ test("fluxos públicos completos e isolamento entre visitantes", async () => {
   const first = await leader.get();
   const other = await outsider.get();
   assert.equal(first.isGuest, true);
+  assert.equal(first.membership.kind, "personal");
   assert.notEqual(first.membership.companyId, other.membership.companyId);
   assert.equal(first.platformCompanies.length, 0);
   assert.equal((await outsider.call(`/api/app?company=${first.membership.companyId}`)).status, 403);
