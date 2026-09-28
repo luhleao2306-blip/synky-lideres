@@ -40,7 +40,7 @@ export async function GET(request:Request) {
     if(!m&&!token&&!companySelection){
       const companyId=id();
       await db().batch([
-        db().prepare("INSERT INTO companies(id,name,created_at) VALUES(?,?,?)").bind(companyId,"Meu espaço",now()),
+        db().prepare("INSERT INTO companies(id,name,kind,created_at) VALUES(?,?,?,?)").bind(companyId,"Meu espaço","personal",now()),
         db().prepare("INSERT INTO members(id,company_id,user_id,email,name,role) VALUES(?,?,?,?,?,?)").bind(id(),companyId,user.userId,user.email.toLowerCase(),user.displayName,"admin"),
       ]);
       m=await member(user.userId,companyId);
@@ -54,7 +54,7 @@ export async function GET(request:Request) {
       const rows=await all("SELECT scores FROM mirror_responses WHERE cycle_id=?",cycle.id);
       return publicCycle(cycle,rows.length,rows.map(r=>parse(r.scores)).filter(Array.isArray));
     }));
-    const mirrorRequests=await all("SELECT i.token,i.reference_id,c.created_at,c.status FROM invites i JOIN mirror_cycles c ON c.id=i.reference_id LEFT JOIN mirror_responses r ON r.cycle_id=c.id AND r.respondent_id=? WHERE i.company_id=? AND i.email=? AND i.type='mirror' AND i.used_at IS NULL AND i.expires_at>? AND c.status='open' AND r.id IS NULL",memberId,companyId,user.email.toLowerCase(),now());
+    const mirrorRequests=await all("SELECT i.token,i.reference_id,c.created_at,c.status FROM invites i JOIN mirror_cycles c ON c.id=i.reference_id LEFT JOIN mirror_responses r ON r.cycle_id=c.id AND r.respondent_id=? WHERE i.company_id=? AND i.email IN (?,?) AND i.type='mirror' AND i.used_at IS NULL AND i.expires_at>? AND c.status='open' AND r.id IS NULL",memberId,companyId,user.email.toLowerCase(),String(m.email).toLowerCase(),now());
     const runs=await all("SELECT id,scenario_id,choices,created_at FROM decision_runs WHERE company_id=? AND member_id=? ORDER BY created_at DESC LIMIT 20",companyId,memberId);
     const pairRows=await all("SELECT * FROM communication_pairs WHERE company_id=? AND status!='removed' AND (creator_id=? OR partner_id=?) ORDER BY created_at DESC",companyId,memberId,memberId);
     const pairs=await Promise.all(pairRows.map(async pair=>{
@@ -65,7 +65,7 @@ export async function GET(request:Request) {
       const preferences=ready?responses.map(r=>parse(r.preferences)):[];
       return {id:pair.id,status:pair.status,createdAt:pair.created_at,partnerEmail:pair.partner_email,answered:!!mine,ready,preferences:ready?preferences:undefined,agreement:ready?pair.agreement:undefined};
     }));
-    const pendingCommunication=await all("SELECT i.token,i.reference_id,p.created_at FROM invites i JOIN communication_pairs p ON p.id=i.reference_id WHERE i.company_id=? AND i.email=? AND i.type='communication' AND i.used_at IS NULL AND i.expires_at>? AND p.status='pending'",companyId,user.email.toLowerCase(),now());
+    const pendingCommunication=await all("SELECT i.token,i.reference_id,p.created_at FROM invites i JOIN communication_pairs p ON p.id=i.reference_id WHERE i.company_id=? AND i.email IN (?,?) AND i.type='communication' AND i.used_at IS NULL AND i.expires_at>? AND p.status='pending'",companyId,user.email.toLowerCase(),String(m.email).toLowerCase(),now());
     const energyRows=await all("SELECT id,entry_date AS entryDate,activity_type AS activityType,activity,energy,created_at AS createdAt FROM energy_entries WHERE company_id=? AND member_id=? AND entry_date>=? ORDER BY entry_date DESC,created_at DESC LIMIT 100",companyId,memberId,new Date(Date.now()-30*864e5).toISOString().slice(0,10));
     const energySummary=summarizeEnergy(energyRows.filter(row=>String(row.entryDate)>=new Date(Date.now()-14*864e5).toISOString().slice(0,10)).map(row=>({entryDate:String(row.entryDate),activityType:String(row.activityType),energy:Number(row.energy)})));
     const energyShares=await all("SELECT s.id,l.name,l.email FROM energy_shares s JOIN members l ON l.id=s.leader_id AND l.company_id=s.company_id WHERE s.company_id=? AND s.member_id=? ORDER BY s.created_at DESC",companyId,memberId);
@@ -90,7 +90,7 @@ export async function GET(request:Request) {
     const thermometerRequests=await all("SELECT r.id AS roundId,t.dimensions,t.created_at AS createdAt FROM thermometer_tracks t JOIN thermometer_rounds r ON r.track_id=t.id AND r.status='open' JOIN mirror_responses original ON original.cycle_id=t.cycle_id AND original.respondent_id=? LEFT JOIN thermometer_responses answered ON answered.round_id=r.id AND answered.respondent_id=? WHERE t.company_id=? AND answered.id IS NULL ORDER BY r.created_at DESC",memberId,memberId,companyId);
     const canManage=["admin","rh"].includes(String(m.role));
     const people=canManage?await all("SELECT id,name,email,role FROM members WHERE company_id=? ORDER BY name",companyId):[];
-    const pendingInvites=canManage?await all("SELECT email,type,role,expires_at AS expiresAt,created_at AS createdAt FROM invites WHERE company_id=? AND type='member' AND used_at IS NULL AND expires_at>? ORDER BY created_at DESC LIMIT 30",companyId,now()):[];
+    const pendingInvites=canManage?await all("SELECT token,email,type,role,expires_at AS expiresAt,created_at AS createdAt FROM invites WHERE company_id=? AND type='member' AND used_at IS NULL AND expires_at>? ORDER BY created_at DESC LIMIT 30",companyId,now()):[];
     const companyStats=canManage?{
       people:people.length,
       mirrorCycles:Number((await one("SELECT COUNT(*) AS n FROM mirror_cycles WHERE company_id=?",companyId))?.n||0),
@@ -98,8 +98,8 @@ export async function GET(request:Request) {
       careerRuns:Number((await one("SELECT COUNT(*) AS n FROM career_runs WHERE company_id=?",companyId))?.n||0),
       thermometerTracks:Number((await one("SELECT COUNT(*) AS n FROM thermometer_tracks WHERE company_id=?",companyId))?.n||0),
     }:null;
-    const platformCompanies=platformAdmin?await all("SELECT c.id,c.name,c.created_at AS createdAt,COUNT(m.id) AS people FROM companies c LEFT JOIN members m ON m.company_id=c.id GROUP BY c.id ORDER BY c.created_at DESC"):[];
-    return respond({user:{name:user.isGuest?String(m.name):user.displayName,email:user.email},isGuest:user.isGuest,membership:{id:memberId,role:m.role,companyId,companyName:m.company_name},memberships,platformAdmin,platformCompanies,moduleSettings:resolveModules(m.modules_json),mirrors,mirrorRequests,runs:runs.map(r=>({...r,choices:parse(r.choices)})),pairs,pendingCommunication,energyEntries:energyRows,energySummary,energyShares,sharedEnergy,careerRuns,thermometerTracks,thermometerRequests:thermometerRequests.map(row=>({...row,dimensions:parse(row.dimensions)})),people,pendingInvites,companyStats,invite:invite?{type:invite.type,token,companyId:invite.company_id,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite});
+    const platformCompanies=platformAdmin?await all("SELECT c.id,c.name,c.created_at AS createdAt,COUNT(m.id) AS people FROM companies c JOIN members owner ON owner.company_id=c.id AND owner.user_id=? AND owner.role='admin' LEFT JOIN members m ON m.company_id=c.id WHERE c.kind='organization' GROUP BY c.id ORDER BY c.created_at DESC",user.userId):[];
+    return respond({user:{name:user.isGuest?String(m.name):user.displayName,email:user.isGuest?String(m.email):user.email},isGuest:user.isGuest,membership:{id:memberId,role:m.role,companyId,companyName:m.company_name},memberships,platformAdmin,platformCompanies,moduleSettings:resolveModules(m.modules_json),mirrors,mirrorRequests,runs:runs.map(r=>({...r,choices:parse(r.choices)})),pairs,pendingCommunication,energyEntries:energyRows,energySummary,energyShares,sharedEnergy,careerRuns,thermometerTracks,thermometerRequests:thermometerRequests.map(row=>({...row,dimensions:parse(row.dimensions)})),people,pendingInvites,companyStats,invite:invite?{type:invite.type,token,companyId:invite.company_id,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite});
   } catch(e){console.error("app get failed",e);return fail("Não foi possível carregar os dados. Tente novamente.",500)}
 }
 export async function POST(request:Request) {
@@ -134,7 +134,7 @@ export async function POST(request:Request) {
       let invitedMember=await member(user.userId,String(invite.company_id));
       if(!invitedMember) {
         const memberId=id();
-        await run("INSERT INTO members(id,company_id,user_id,email,name,role) VALUES(?,?,?,?,?,?)",memberId,invite.company_id,user.userId,user.email.toLowerCase(),user.displayName,invite.role||"participant");
+        await run("INSERT INTO members(id,company_id,user_id,email,name,role) VALUES(?,?,?,?,?,?)",memberId,invite.company_id,user.userId,user.isGuest?String(invite.email):user.email.toLowerCase(),user.displayName,invite.role||"participant");
         invitedMember=await member(user.userId,String(invite.company_id));
       }
       if(user.isGuest)await run("UPDATE invites SET email=? WHERE token=?",user.email.toLowerCase(),token);
@@ -148,6 +148,14 @@ export async function POST(request:Request) {
       const name=safeText(p.name,70);
       if(name.length<2)return fail("Informe um nome com pelo menos dois caracteres.");
       await run("UPDATE members SET name=? WHERE id=? AND company_id=?",name,memberId,companyId);
+      return json({ok:true});
+    }
+    if(action==="set_contact_email") {
+      if(!user.isGuest)return fail("O e-mail desta conta é gerenciado pelo acesso ChatGPT.",403);
+      const email=emailText(p.email);
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.endsWith("@visitor.synky.local"))return fail("Informe um e-mail de contato válido.");
+      if(await one("SELECT id FROM members WHERE company_id=? AND email=? AND id!=?",companyId,email,memberId))return fail("Este e-mail já está em uso neste ambiente.",409);
+      await run("UPDATE members SET email=? WHERE id=? AND company_id=?",email,memberId,companyId);
       return json({ok:true});
     }
     if(action==="rename_company") {
@@ -173,6 +181,12 @@ export async function POST(request:Request) {
       const token=id();await run("INSERT INTO invites(token,company_id,email,type,role,expires_at,created_at) VALUES(?,?,?,?,?,?,?)",token,companyId,email,"member",newRole,new Date(Date.now()+7*864e5).toISOString(),now());
       return json({ok:true,link:`${new URL(request.url).origin}/app?invite=${token}`});
     }
+    if(action==="revoke_invite") {
+      if(!["admin","rh"].includes(role))return fail("Apenas administração e RH podem cancelar convites.",403);
+      const result=await run("DELETE FROM invites WHERE token=? AND company_id=? AND type='member' AND used_at IS NULL",safeText(p.token,100),companyId);
+      if(!result.meta.changes)return fail("Convite não encontrado.",404);
+      return json({ok:true});
+    }
     if(action==="change_member_role") {
       if(role!=="admin")return fail("Apenas o administrador pode alterar perfis.",403);
       const target=await one("SELECT id,role FROM members WHERE id=? AND company_id=?",p.memberId,companyId);
@@ -190,7 +204,7 @@ export async function POST(request:Request) {
     if(action==="invite_mirror") {
       const cycle=await one("SELECT * FROM mirror_cycles WHERE id=? AND company_id=? AND leader_id=? AND status='open'",p.cycleId,companyId,memberId);
       if(!cycle)return fail("Ciclo não encontrado.",404);
-      const email=emailText(p.email);if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email===user.email.toLowerCase())return fail("Informe o e-mail de alguém do time.");
+      const email=emailText(p.email);if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||(email===user.email.toLowerCase()||email===String(m.email).toLowerCase()))return fail("Informe o e-mail de alguém do time.");
       const existing=await one("SELECT token FROM invites WHERE company_id=? AND email=? AND type='mirror' AND reference_id=? AND used_at IS NULL AND expires_at>?",companyId,email,cycle.id,now());
       if(existing)return json({ok:true,link:`${new URL(request.url).origin}/app?invite=${existing.token}`});
       const token=id();await run("INSERT INTO invites(token,company_id,email,type,role,reference_id,expires_at,created_at) VALUES(?,?,?,?,?,?,?,?)",token,companyId,email,"mirror","participant",cycle.id,new Date(Date.now()+14*864e5).toISOString(),now());
@@ -222,7 +236,7 @@ export async function POST(request:Request) {
       return json({ok:true,feedback,scenario:scenarios.find(s=>s.id===scenarioId)?.title});
     }
     if(action==="create_communication") {
-      const email=emailText(p.email);if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email===user.email.toLowerCase())return fail("Informe o e-mail da outra pessoa.");
+      const email=emailText(p.email);if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||(email===user.email.toLowerCase()||email===String(m.email).toLowerCase()))return fail("Informe o e-mail da outra pessoa.");
       if(!validPreferences(p.preferences)||p.consent!==true)return fail("Responda aos itens e autorize a comparação.");
       const pairId=id(),token=id();
       await db().batch([

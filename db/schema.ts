@@ -3,6 +3,7 @@ import { integer, sqliteTable, text, uniqueIndex, index } from "drizzle-orm/sqli
 export const companies = sqliteTable("companies", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
+  kind: text("kind", { enum: ["organization", "personal"] }).notNull().default("organization"),
   modules: text("modules").notNull().default("{}"),
   createdAt: text("created_at").notNull(),
 });
