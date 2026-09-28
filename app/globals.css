@@ -427,11 +427,11 @@
 .scenario-card{border-color:#dce8df;border-radius:19px;box-shadow:0 8px 24px #183a2609;transition:transform .2s,box-shadow .2s,border-color .2s}
 .module-heading.experience-intro{min-height:240px;border-color:#dce9df;border-radius:20px;background:#eaf4ed;padding:33px 38px;box-shadow:0 8px 27px #183a2608}
 .experience-intro:after{width:45%;background-size:cover;background-position:center;background-repeat:no-repeat;mask-image:linear-gradient(90deg,transparent 0%,#000 35%)}
-.experience-intro.mirror-intro:after{background-image:url("/images/experiences/mirror.webp");background-position:center}
-.experience-intro.decisions-intro:after{background-image:url("/images/experiences/decisions.webp");background-position:center}
-.experience-intro.energy-intro:after{background-image:url("/images/experiences/energy.webp");background-size:cover}
-.experience-intro.career-intro:after{background-image:url("/images/experiences/career.webp");background-size:cover}
-.experience-intro.thermometer-intro:after{background-image:url("/images/experiences/thermometer.webp");background-size:cover}
+.experience-intro.mirror-intro:after{background-image:url("/images/experiences/mirror-v2.webp");background-position:center}
+.experience-intro.decisions-intro:after{background-image:url("/images/experiences/decisions-v2.webp");background-position:center}
+.experience-intro.energy-intro:after{background-image:url("/images/experiences/energy-v2.webp");background-size:cover}
+.experience-intro.career-intro:after{background-image:url("/images/experiences/career-v2.webp");background-size:cover}
+.experience-intro.thermometer-intro:after{background-image:url("/images/experiences/thermometer-v2.webp");background-size:cover}
 .experience-intro h1,.experience-intro p{max-width:52%}
 .scenario-card:hover{transform:translateY(-3px);box-shadow:0 15px 31px #183a2614;border-color:#9acba9}
 .scenario-card:nth-child(1),.scenario-card:nth-child(2),.scenario-card:nth-child(3){background:#fff}

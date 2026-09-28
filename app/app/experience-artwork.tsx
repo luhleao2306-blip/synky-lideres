@@ -1,12 +1,12 @@
 import type { ModuleKey } from "@/lib/modules";
 
 const artwork = {
-  mirror: { image: "/images/experiences/mirror.webp", label: "ESCUTA DO TIME" },
-  decisions: { image: "/images/experiences/decisions.webp", label: "DECISÕES REAIS" },
-  communication: { image: "/images/experiences/communication.webp", label: "CONVERSA EM DUPLA" },
-  energy: { image: "/images/experiences/energy.webp", label: "ROTINA E ENERGIA" },
-  career: { image: "/images/experiences/career.webp", label: "ESCOLHAS DE CARREIRA" },
-  thermometer: { image: "/images/experiences/thermometer.webp", label: "EVOLUÇÃO DO TIME" },
+  mirror: { image: "/images/experiences/mirror-v2.webp", label: "ESCUTA DO TIME" },
+  decisions: { image: "/images/experiences/decisions-v2.webp", label: "DECISÕES REAIS" },
+  communication: { image: "/images/experiences/communication-v2.webp", label: "CONVERSA EM DUPLA" },
+  energy: { image: "/images/experiences/energy-v2.webp", label: "ROTINA E ENERGIA" },
+  career: { image: "/images/experiences/career-v2.webp", label: "ESCOLHAS DE CARREIRA" },
+  thermometer: { image: "/images/experiences/thermometer-v2.webp", label: "EVOLUÇÃO DO TIME" },
 } satisfies Record<ModuleKey, { image: string; label: string }>;
 
 export default function ExperienceArtwork({ kind, className = "" }: { kind: ModuleKey; className?: string }) {
