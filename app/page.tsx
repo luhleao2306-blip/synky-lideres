@@ -1,65 +1,31 @@
 import PublicNavigation from "@/components/public-navigation";
 import PublicFooter from "@/components/public-footer";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import PublicProductTour from "@/components/public-product-tour";
+import { publicExperiences } from "@/lib/public-experiences";
+import { ArrowRight, ArrowUpRight, Check } from "lucide-react";
 
-const featured = [
-  { number: "01", title: "Espelho do Líder", text: "Escute como o time percebe sua liderança.", image: "/images/experiences/mirror-v2.webp", alt: "Líder ouvindo a equipe em uma conversa", href: "/experiencias/mirror" },
-  { number: "02", title: "Decisões Sob Pressão", text: "Explore escolhas em situações do trabalho.", image: "/images/experiences/decisions-v2.webp", alt: "Líder analisando uma decisão com colegas", href: "/experiencias/decisions" },
-  { number: "03", title: "Raio X da Comunicação", text: "Entenda o que duas pessoas ouviram de um mesmo combinado.", image: "/images/experiences/communication-v2.webp", alt: "Duas pessoas alinhando expectativas no trabalho", href: "/experiencias/communication" },
-];
-
-function ProfilePreview() {
-  return <div className="clarity-preview" aria-label="Exemplo ilustrativo de uma comparação de percepções">
-    <div className="clarity-preview-head"><div><span>ESPELHO DO LÍDER</span><strong>Percepções em perspectiva</strong></div><small>EXEMPLO VISUAL</small></div>
-    <svg className="clarity-radar" viewBox="0 0 400 322" role="img" aria-label="Gráfico ilustrativo de seis comportamentos de liderança">
-      <g fill="none" stroke="#d7e9dc" strokeWidth="1">
-        <polygon points="200,136 221,148 221,172 200,184 179,172 179,148"/>
-        <polygon points="200,112 241,136 241,184 200,208 159,184 159,136"/>
-        <polygon points="200,88 262,124 262,196 200,232 138,196 138,124"/>
-        <polygon points="200,64 283,112 283,208 200,256 117,208 117,112"/>
-        <path d="M200 64V256M117 112L283 208M283 112L117 208"/>
-      </g>
-      <polygon points="200,91 262,125 252,190 200,226 148,190 145,128" fill="#9acba9" fillOpacity=".27" stroke="#8fbd9c" strokeWidth="2" strokeDasharray="5 5"/>
-      <polygon points="200,81 255,129 268,199 200,240 135,198 130,120" fill="#168960" fillOpacity=".13" stroke="#168960" strokeWidth="2.5"/>
-      <g fill="#168960"><circle cx="200" cy="81" r="4"/><circle cx="255" cy="129" r="4"/><circle cx="268" cy="199" r="4"/><circle cx="200" cy="240" r="4"/><circle cx="135" cy="198" r="4"/><circle cx="130" cy="120" r="4"/></g>
-      <g fill="#42614d" fontFamily="Arial, sans-serif" fontSize="12" fontWeight="600">
-        <text x="200" y="39" textAnchor="middle">Escuta</text>
-        <text x="299" y="107">Clareza</text>
-        <text x="299" y="221">Delegação</text>
-        <text x="200" y="286" textAnchor="middle">Reconhecimento</text>
-        <text x="101" y="221" textAnchor="end">Abertura</text>
-        <text x="101" y="107" textAnchor="end">Acompanhamento</text>
-      </g>
-    </svg>
-    <div className="clarity-preview-foot"><span><i/>Sua percepção</span><span><i/>Percepção do time</span></div>
-    <small className="clarity-preview-note">Dados ilustrativos. Na plataforma, a visão do time só aparece com pelo menos cinco respostas válidas.</small>
+function HeroProductPreview() {
+  return <div className="sales-hero-visual" aria-label="Prévia ilustrativa da plataforma Synky Líderes">
+    <div className="sales-hero-desktop">
+      <div className="sales-hero-desktop-top"><span>SYNKY <b>LÍDERES</b></span><span>PRÉVIA DA PLATAFORMA</span></div>
+      <div className="sales-hero-desktop-main"><aside><span className="selected">Visão geral</span><span>Experiências</span><span>Meu time</span><span>Resultados</span></aside><div className="sales-hero-desktop-content"><small>SUA JORNADA DE LIDERANÇA</small><h2>Uma conversa melhor começa aqui.</h2><p>Comece o Espelho do Líder e descubra novas perspectivas sobre o seu trabalho com a equipe.</p><div className="sales-hero-next"><span>SEU PRÓXIMO PASSO</span><strong>Espelho do Líder</strong><small>Responda sobre você. Depois, convide o time.</small><a href="/experiencias/mirror">Conhecer a experiência <ArrowRight size={15}/></a></div></div></div>
+    </div>
+    <div className="sales-hero-phone"><span>DECISÕES SOB PRESSÃO</span><strong>Um erro antes da entrega</strong><small>O que você faz primeiro?</small><div>A&nbsp;&nbsp; Busco entender o impacto</div><div>B&nbsp;&nbsp; Inicio a correção</div><span className="sales-phone-progress"><i/></span></div>
+    <span className="sales-hero-caption">Prévia ilustrativa da experiência no sistema</span>
   </div>;
 }
 
 export default function Home() {
-  return <div className="site clarity-site"><PublicNavigation active="home"/>
-    <main className="clarity-main">
-      <section className="clarity-hero" aria-labelledby="clarity-title">
-        <div className="clarity-hero-copy">
-          <span className="clarity-kicker">AUTOCONHECIMENTO <b>·</b> PESSOAS <b>·</b> AÇÃO</span>
-          <h1 id="clarity-title">Conheça seu jeito de <em>liderar.</em></h1>
-          <p>Descubra padrões, escute seu time e transforme o que aprendeu em uma próxima atitude.</p>
-          <div className="clarity-actions"><a className="clarity-button" href="/experiencias">Explorar experiências <ArrowRight size={18}/></a><a className="clarity-button clarity-button-secondary" href="/empresas">Para empresas</a></div>
-          <div className="clarity-hero-line"><span>Respostas individuais protegidas</span><span>Resultados para agir</span></div>
-        </div>
-        <div className="clarity-stage">
-          <ProfilePreview/>
-          <div className="clarity-stage-side"><span>UMA JORNADA POSSÍVEL</span><a href="/experiencias/mirror"><b>01</b><strong>Escute o time</strong><ArrowUpRight size={17}/></a><a href="/experiencias/decisions"><b>02</b><strong>Teste escolhas</strong><ArrowUpRight size={17}/></a><a href="/app"><b>03</b><strong>Acompanhe o que mudou</strong><ArrowUpRight size={17}/></a></div>
-        </div>
-      </section>
+  return <div className="site sales-site"><PublicNavigation active="home"/>
+    <main className="sales-main">
+      <section className="sales-hero" aria-labelledby="sales-title"><div className="sales-hero-copy"><span className="sales-kicker">SYNKY LÍDERES · DESENVOLVIMENTO NA PRÁTICA</span><h1 id="sales-title">Líderes que escutam.<br/><em>Equipes que evoluem.</em></h1><p>Uma plataforma para escutar pessoas, praticar decisões e acompanhar a evolução da liderança em um só lugar.</p><div className="sales-hero-actions"><a className="sales-primary" href="#produto">Ver a plataforma <ArrowRight size={18}/></a><a className="sales-secondary" href="/empresas">Usar com minha equipe <ArrowUpRight size={17}/></a></div><span className="sales-hero-support">Para líderes, profissionais, equipes e RH.</span></div><HeroProductPreview/></section>
 
-      <section className="clarity-featured" aria-labelledby="clarity-featured-title">
-        <div className="clarity-section-head"><div><span className="clarity-kicker">EXPERIÊNCIAS SYNKY</span><h2 id="clarity-featured-title">Para o que acontece <em>de verdade</em> no trabalho.</h2></div><a href="/experiencias">Todas as experiências <ArrowUpRight size={17}/></a></div>
-        <div className="clarity-featured-grid">{featured.map(item=><a href={item.href} className="clarity-featured-item" key={item.number}><img src={item.image} alt={item.alt} loading="lazy"/><span className="clarity-featured-meta">{item.number} / EXPERIÊNCIA</span><span className="clarity-featured-title">{item.title}<ArrowUpRight size={21}/></span><span className="clarity-featured-text">{item.text}</span></a>)}</div>
-      </section>
+      <div className="sales-proof" aria-label="O que a plataforma oferece"><span><strong>06</strong> experiências práticas</span><span>Convites e participação em equipe</span><span>Resultados com privacidade</span></div>
 
-      <section className="clarity-practice" aria-labelledby="clarity-practice-title"><div><span className="clarity-kicker">DE UM INSIGHT A UMA AÇÃO</span><h2 id="clarity-practice-title">Olhe para si.<br/>Escute o time.<br/><em>Faça diferente.</em></h2></div><div className="clarity-practice-steps"><div><span>01</span><p>Escolha uma experiência que converse com seu momento.</p></div><div><span>02</span><p>Responda sozinho ou convide outras pessoas, quando fizer sentido.</p></div><div><span>03</span><p>Reveja o resultado e leve um próximo passo para a prática.</p></div><a href="/app">Começar na plataforma <ArrowRight size={18}/></a></div></section>
+      <PublicProductTour/>
 
-      <section className="clarity-close" aria-labelledby="clarity-close-title"><span className="clarity-kicker">PARA VOCÊ E PARA SUA EQUIPE</span><h2 id="clarity-close-title">A próxima conversa pode mudar <em>o caminho.</em></h2><div><p>Comece por uma experiência e descubra o que vale conversar agora.</p><a href="/experiencias" className="clarity-button clarity-button-light">Encontrar minha experiência <ArrowRight size={18}/></a></div></section>
+      <section className="sales-experiences" aria-labelledby="sales-experiences-title"><div className="sales-experiences-intro"><span className="sales-kicker">EXPERIÊNCIAS DA PLATAFORMA</span><h2 id="sales-experiences-title">Um jeito diferente de evoluir para cada <em>desafio.</em></h2><p>Da escuta do time às escolhas de carreira, cada experiência entrega uma reflexão que pode virar ação.</p><a href="/experiencias">Explorar todas as experiências <ArrowRight size={17}/></a></div><div className="sales-experiences-list">{publicExperiences.map(item=><a href={`/experiencias/${item.slug}`} key={item.slug}><span>{item.number}</span><span><strong>{item.title}</strong><small>{item.audience}</small></span><ArrowUpRight size={18}/></a>)}</div></section>
+
+      <section className="sales-business" id="empresas" aria-labelledby="sales-business-title"><div className="sales-business-copy"><span className="sales-kicker">PARA EMPRESAS</span><h2 id="sales-business-title">Desenvolva líderes. <em>Acompanhe a equipe.</em></h2><p>Organize acessos por função, acompanhe a participação e consulte os resultados permitidos a cada perfil. Cada empresa tem seu próprio ambiente.</p><div className="sales-business-points"><span><Check size={17}/> Convites para líderes, RH e participantes</span><span><Check size={17}/> Experiências individuais, em dupla e em equipe</span><span><Check size={17}/> Respostas do time protegidas nas comparações coletivas</span></div><div className="sales-business-actions"><a href="/empresas" className="sales-primary sales-primary-light">Conhecer a solução <ArrowRight size={18}/></a><a href="/app" className="sales-business-link">Acessar plataforma <ArrowUpRight size={17}/></a></div></div><div className="sales-business-preview"><div className="sales-business-preview-top"><span>AMBIENTE DA EMPRESA</span><small>PRÉVIA ILUSTRATIVA</small></div><h3>Organize a evolução do time.</h3><div className="sales-business-preview-grid"><div><span>PERFIS</span><strong>Administrador</strong><strong>RH</strong><strong>Líder</strong><strong>Participante</strong></div><div><span>EXPERIÊNCIAS</span><strong>Espelho do Líder <i>Ativo</i></strong><strong>Decisões Sob Pressão <i>Ativo</i></strong><strong>Raio X da Comunicação <i>Ativo</i></strong></div></div><div className="sales-business-preview-foot"><Check size={16}/> Dados e permissões separados por empresa</div></div></section>
     </main><PublicFooter/></div>;
 }
