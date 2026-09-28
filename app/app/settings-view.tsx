@@ -52,7 +52,7 @@ export default function SettingsView({ name, email, company, role, isGuest, isAd
       </div>
       <aside className="settings-aside">
         <section className="settings-aside-card settings-context-card"><span className="settings-aside-icon"><Building2 size={22}/></span><span className="kicker">ESPAÇO ATUAL</span><h2>{company}</h2><p>As experiências e os convites deste ambiente são administrados separadamente.</p></section>
-        <section className="settings-aside-card settings-privacy-card"><span className="settings-aside-icon"><ShieldCheck size={22}/></span><span className="kicker">PRIVACIDADE</span><h2>Resultados protegidos</h2><div><LockKeyhole size={17}/><p>No Espelho do Líder, a percepção do time aparece em média agregada após cinco respostas e o encerramento do ciclo.</p></div><div><Mail size={17}/><p>Na comunicação em dupla, as preferências só são comparadas quando as duas pessoas consentem.</p></div></section>
+        <section className="settings-aside-card settings-privacy-card"><span className="settings-aside-icon"><ShieldCheck size={22}/></span><span className="kicker">PRIVACIDADE</span><h2>Resultados protegidos</h2><div><LockKeyhole size={17}/><p>Cada pessoa acessa seus próprios resultados. O administrador master pode consultar os resultados individuais de todos os espaços.</p></div><div><ShieldCheck size={17}/><p>No Espelho do Líder, respostas individuais do time nunca são exibidas. A média aparece após cinco respostas e o encerramento do ciclo.</p></div><div><Mail size={17}/><p>Na comunicação em dupla, as preferências só são comparadas quando as duas pessoas consentem.</p></div></section>
       </aside>
     </div>
   </section>;
