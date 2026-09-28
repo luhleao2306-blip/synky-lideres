@@ -1,6 +1,6 @@
 import PublicNavigation from "@/components/public-navigation";
 import PublicFooter from "@/components/public-footer";
-import { ArrowRight, BarChart3, MessageCircleMore, UsersRound, Zap } from "lucide-react";
+import { ArrowRight, BarChart3, Compass, MessageCircleMore, UsersRound, Zap } from "lucide-react";
 
 const modules=[
   {title:"Espelho do Líder",description:"Reflita sobre seus padrões e amplie sua consciência.",icon:UsersRound,view:"mirror"},
@@ -8,9 +8,9 @@ const modules=[
   {title:"Raio X da Comunicação",description:"Entenda o impacto da sua comunicação no time.",icon:MessageCircleMore,view:"communication"},
 ];
 const paths=[
-  {tag:"PARA VOCÊ",title:"Autoconhecimento que vira ação",description:"Experiências imersivas para descobrir padrões, fortalecer habilidades e liderar com mais clareza e propósito.",className:"personal",href:"/experiencias"},
-  {tag:"PARA TIMES",title:"Conversas que geram evolução",description:"Ferramentas para estimular diálogos sinceros, aumentar a colaboração e transformar insights em ação no dia a dia.",className:"teams",href:"/experiencias/communication"},
-  {tag:"PARA EMPRESAS",title:"Liderança como vantagem coletiva",description:"Uma visão compartilhada para desenvolver líderes, fortalecer culturas e acompanhar mudanças com cuidado.",className:"business",href:"/empresas"},
+  {tag:"PARA VOCÊ",title:"Autoconhecimento que vira ação",description:"Experiências imersivas para descobrir padrões, fortalecer habilidades e liderar com mais clareza e propósito.",className:"personal",href:"/experiencias",icon:Compass},
+  {tag:"PARA TIMES",title:"Conversas que geram evolução",description:"Ferramentas para estimular diálogos sinceros, aumentar a colaboração e transformar insights em ação no dia a dia.",className:"teams",href:"/experiencias/communication",icon:UsersRound},
+  {tag:"PARA EMPRESAS",title:"Liderança como vantagem coletiva",description:"Uma visão compartilhada para desenvolver líderes, fortalecer culturas e acompanhar mudanças com cuidado.",className:"business",href:"/empresas",icon:BarChart3},
 ];
 function Radar(){
   const labels=["Visão","Comunicação","Gestão","Execução","Escuta","Decisão"];
@@ -25,6 +25,6 @@ function Radar(){
 export default function Home(){
   return <div className="site"><PublicNavigation active="home"/>
     <main><section className="landing-hero" id="inicio"><div className="landing-copy"><span className="eyebrow">AUTOCONHECIMENTO <b>•</b> PESSOAS <b>•</b> IMPACTO REAL</span><h1>Conheça seu jeito de <em>liderar.</em></h1><p>Descubra padrões, escute seu time e evolua na prática.</p><div className="landing-actions"><a href="/experiencias" className="button primary">Explorar experiências <ArrowRight size={17}/></a><a href="/empresas" className="button outline">Para empresas</a></div><div className="landing-proofs"><span><BarChart3 size={18}/> Insights práticos baseados em evidências</span><span><UsersRound size={18}/> Experiências individuais e para times</span><span><Zap size={18}/> Evolução contínua no seu contexto</span></div></div><div className="landing-visual"><div className="landing-orbit"/><Radar/><div className="landing-module-stack">{modules.map((module,i)=><a href={`/experiencias/${module.view}`} className="landing-module" key={module.title}><span className={`landing-module-icon icon-${i}`}><module.icon size={18}/></span><span><strong>{module.title}</strong><small>{module.description}</small></span><ArrowRight size={16}/></a>)}</div></div></section>
-    <section className="landing-paths" id="experiencias" aria-label="Caminhos de desenvolvimento">{paths.map(path=><a key={path.tag} href={path.href} className={`landing-path ${path.className}`}><span>{path.tag}</span><h2>{path.title}</h2><p>{path.description}</p><span className="landing-path-arrow"><ArrowRight size={18}/></span></a>)}</section>
+    <section className="landing-paths" id="experiencias" aria-label="Caminhos de desenvolvimento">{paths.map(path=><a key={path.tag} href={path.href} className={`landing-path ${path.className}`}><span>{path.tag}</span><path.icon className="landing-path-icon" size={64} strokeWidth={1.2} aria-hidden="true"/><h2>{path.title}</h2><p>{path.description}</p><span className="landing-path-arrow"><ArrowRight size={18}/></span></a>)}</section>
     <section className="how" id="como-funciona"><div><span className="kicker">DO INSIGHT À AÇÃO</span><h2>Seu desenvolvimento acontece em movimento.</h2></div><div className="steps"><div><b>01</b><h3>Explore</h3><p>Responda experiências curtas e relevantes, no seu ritmo.</p></div><div><b>02</b><h3>Entenda</h3><p>Veja padrões e perguntas que abrem novas perspectivas.</p></div><div><b>03</b><h3>Experimente</h3><p>Escolha uma ação pequena e acompanhe sua prática.</p></div></div></section></main><PublicFooter/></div>;
 }
