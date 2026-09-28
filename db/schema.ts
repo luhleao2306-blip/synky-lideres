@@ -43,6 +43,14 @@ export const mirrorResponses = sqliteTable("mirror_responses", {
   scores: text("scores").notNull(),
   createdAt: text("created_at").notNull(),
 }, t => [uniqueIndex("idx_mirror_response_unique").on(t.cycleId,t.respondentId)]);
+export const mirrorActionCheckins = sqliteTable("mirror_action_checkins", {
+  id: text("id").primaryKey(),
+  cycleId: text("cycle_id").notNull().references(() => mirrorCycles.id),
+  action: text("action").notNull(),
+  note: text("note").notNull(),
+  entryDate: text("entry_date").notNull(),
+  createdAt: text("created_at").notNull(),
+}, t => [uniqueIndex("idx_mirror_checkin_day").on(t.cycleId,t.entryDate)]);
 export const decisionRuns = sqliteTable("decision_runs", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),

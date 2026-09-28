@@ -75,6 +75,57 @@ export const scenarios: Scenario[] = [
       {text:"Espero ter certeza absoluta antes de falar.",consequence:"A informação fica mais precisa, porém outros grupos perdem tempo para reagir.",behavior:"Buscou precisão"},
     ]},
   ]},
+  { id:"feedback-dificil", title:"Uma conversa de feedback", summary:"Uma entrega recorrente está abaixo do combinado e a conversa foi adiada.", duration:"7 min", scenes:[
+    {title:"A preparação",prompt:"Você precisa conversar com uma pessoa que perdeu três prazos. Ela contribui muito em outras frentes. Como começa?",choices:[
+      {text:"Reúno exemplos, impactos e abro espaço para ouvir sua perspectiva.",consequence:"A conversa parte de fatos e revela uma dependência que você não conhecia.",behavior:"Preparou uma conversa justa"},
+      {text:"Espero mais uma semana para ver se melhora sozinho.",consequence:"A pessoa não recebe orientação e outra entrega fica em risco.",behavior:"Adiou uma conversa necessária"},
+      {text:"Envio uma mensagem cobrando mais compromisso.",consequence:"A urgência fica clara, mas a pessoa não sabe quais situações precisam mudar.",behavior:"Sinalizou o problema rapidamente"},
+    ]},
+    {title:"A reação",prompt:"Durante a conversa, a pessoa diz que recebeu pedidos conflitantes de duas lideranças. O que você faz?",choices:[
+      {text:"Peço exemplos e ajudo a definir uma prioridade única com os envolvidos.",consequence:"A causa do atraso fica visível e o time passa a ter um critério comum.",behavior:"Investigou o contexto"},
+      {text:"Reforço que os prazos devem ser cumpridos de qualquer forma.",consequence:"A expectativa fica explícita, mas o conflito de prioridades permanece.",behavior:"Enfatizou a responsabilidade individual"},
+      {text:"Retiro todas as demandas da pessoa até a situação se acalmar.",consequence:"A pressão diminui, mas a pessoa perde autonomia sem um plano de retomada.",behavior:"Protegeu no curto prazo"},
+    ]},
+    {title:"O acompanhamento",prompt:"Vocês chegam a um acordo para as próximas entregas. Como transformá-lo em progresso?",choices:[
+      {text:"Registro o combinado, marco uma revisão e pergunto que apoio será útil.",consequence:"Há clareza sobre o que observar e uma oportunidade de ajustar o plano.",behavior:"Criou acompanhamento concreto"},
+      {text:"Encerramos com a promessa de que vai melhorar.",consequence:"O clima melhora, mas cada um pode entender o acordo de um jeito.",behavior:"Preservou a confiança"},
+      {text:"Passo a aprovar cada tarefa antes de ser enviada.",consequence:"Você reduz incertezas, mas cria uma fila de aprovação.",behavior:"Aumentou o controle"},
+    ]},
+  ]},
+  { id:"delegacao", title:"Delegar com autonomia", summary:"Você recebeu um projeto importante e a equipe quer assumir mais responsabilidade.", duration:"7 min", scenes:[
+    {title:"A escolha",prompt:"Uma pessoa menos experiente se oferece para liderar uma entrega visível. Como você decide?",choices:[
+      {text:"Alinho o resultado esperado, os riscos e o apoio disponível antes de delegar.",consequence:"A pessoa assume uma responsabilidade real com limites compreendidos.",behavior:"Delegou com contexto"},
+      {text:"Faço eu mesmo porque o projeto é importante.",consequence:"A qualidade imediata parece mais previsível, mas sua agenda fica sobrecarregada.",behavior:"Centralizou por segurança"},
+      {text:"Entrego o projeto inteiro sem conversar sobre critérios.",consequence:"A pessoa ganha espaço, mas pode descobrir expectativas tarde demais.",behavior:"Deu autonomia sem alinhamento"},
+    ]},
+    {title:"O primeiro obstáculo",prompt:"Na metade do prazo, uma área parceira muda um requisito. A pessoa procura você. O que faz?",choices:[
+      {text:"Ajudo a avaliar opções e deixo que ela conduza a negociação.",consequence:"Ela mantém a liderança do projeto e aprende a lidar com a mudança.",behavior:"Apoiou sem tomar o lugar"},
+      {text:"Assumo a conversa com a outra área e resolvo sozinho.",consequence:"O impasse pode terminar mais rápido, mas a pessoa sai da decisão.",behavior:"Assumiu o controle da crise"},
+      {text:"Peço que resolva sem me envolver.",consequence:"Ela tem liberdade, mas talvez não tenha autoridade para negociar o impacto.",behavior:"Preservou distância"},
+    ]},
+    {title:"A revisão",prompt:"A entrega ficou boa, embora tenha exigido um ajuste final. Como encerra o projeto?",choices:[
+      {text:"Reconheço o resultado, revisamos decisões e combinamos a próxima autonomia.",consequence:"O aprendizado fica explícito e a pessoa sabe o que pode assumir depois.",behavior:"Transformou entrega em desenvolvimento"},
+      {text:"Agradeço e passo para o próximo trabalho.",consequence:"O reconhecimento acontece, mas lições úteis não são registradas.",behavior:"Valorizou o resultado"},
+      {text:"Foco apenas no ajuste que foi necessário.",consequence:"O erro recebe atenção, porém o progresso pode passar despercebido.",behavior:"Priorizou a correção"},
+    ]},
+  ]},
+  { id:"cansaco-time", title:"Um time no limite", summary:"Os sinais de cansaço aumentam após semanas de entregas intensas.", duration:"7 min", scenes:[
+    {title:"O sinal",prompt:"Em duas reuniões, pessoas antes participativas permanecem em silêncio. O que você faz primeiro?",choices:[
+      {text:"Converso individualmente e reviso carga, prioridades e obstáculos.",consequence:"Você encontra tarefas invisíveis e entende melhor o que está drenando a equipe.",behavior:"Escutou sinais e investigou causas"},
+      {text:"Organizo um encontro para motivar o grupo.",consequence:"Há um momento de conexão, mas a carga de trabalho segue igual.",behavior:"Buscou elevar o ânimo"},
+      {text:"Espero alguém pedir ajuda diretamente.",consequence:"Você preserva espaço, mas problemas podem permanecer ocultos.",behavior:"Aguardou um pedido explícito"},
+    ]},
+    {title:"A negociação",prompt:"Você confirma que o volume de trabalho não cabe na semana. A direção quer manter todos os prazos. O que propõe?",choices:[
+      {text:"Levo cenários de escopo e prazo, mostrando consequências de cada opção.",consequence:"A negociação passa a considerar capacidade real e prioridades claras.",behavior:"Tornou os limites visíveis"},
+      {text:"Peço mais esforço por um último período.",consequence:"As entregas podem avançar, mas o desgaste continua sem previsão de alívio.",behavior:"Protegeu os compromissos imediatos"},
+      {text:"Cancelo atividades sem avisar os envolvidos.",consequence:"O time ganha tempo, mas outras áreas são surpreendidas.",behavior:"Reduziu a carga unilateralmente"},
+    ]},
+    {title:"A retomada",prompt:"Um prazo foi renegociado. Como evitar que o time volte ao mesmo ponto?",choices:[
+      {text:"Crio uma revisão semanal de capacidade e ajusto o que entra na fila.",consequence:"Os sinais de excesso aparecem antes de virar uma nova crise.",behavior:"Criou um ritmo sustentável"},
+      {text:"Prometo que a próxima semana será mais tranquila.",consequence:"A intenção é boa, mas sem mudança no processo a carga pode voltar.",behavior:"Ofereceu tranquilidade"},
+      {text:"Peço que cada pessoa administre melhor o próprio tempo.",consequence:"Há incentivo à organização, porém demandas concorrentes seguem sem decisão.",behavior:"Transferiu a gestão da carga"},
+    ]},
+  ]},
 ];
 export function decisionFeedback(scenarioId:string, choices:number[]) {
   const scenario=scenarios.find(s=>s.id===scenarioId);

@@ -66,6 +66,10 @@ test("fluxos públicos completos e isolamento entre visitantes", async () => {
   assert.deepEqual(closed.mirrors[0].teamScores, [4, 4, 4, 4, 4, 4]);
   assert.equal(JSON.stringify(closed.mirrors).includes("respondent_id"), false);
   await leader.post("choose_action", { cycleId: cycle.id, text: "Escutar sem interromper na próxima conversa." });
+  assert.equal((await outsider.call("/api/app", { action: "add_action_checkin", cycleId: cycle.id, note: "Tentei ouvir o time inteiro." })).status, 403);
+  await leader.post("add_action_checkin", { cycleId: cycle.id, note: "Ouvi uma colega até o fim e entendi melhor o bloqueio." });
+  assert.equal((await leader.get()).mirrors[0].checkins[0].action, "Escutar sem interromper na próxima conversa.");
+  assert.equal((await leader.call("/api/app", { action: "add_action_checkin", cycleId: cycle.id, note: "Tentei novamente mais tarde." })).status, 409);
   await leader.post("create_mirror", { scores: [2, 3, 4, 2, 3, 4] });
   assert.equal((await leader.get()).mirrors.length, 2);
 
@@ -81,7 +85,8 @@ test("fluxos públicos completos e isolamento entre visitantes", async () => {
   await leader.post("new_thermometer_round", { trackId: (await leader.get()).thermometerTracks[0].id });
 
   await leader.post("complete_decision", { scenarioId: "erro-entrega", choices: [0, 1, 2] });
-  assert.equal((await leader.get()).runs.length, 1);
+  await leader.post("complete_decision", { scenarioId: "feedback-dificil", choices: [1, 0, 2] });
+  assert.equal((await leader.get()).runs.length, 2);
   await leader.post("save_career", { choices: [0, 1, 0, 1, 1, 0, 1, 0] });
   assert.equal((await leader.get()).careerRuns.length, 1);
   await leader.post("add_energy", { activity: "Planejamento reservado", activityType: "Planejamento", entryDate: new Date().toISOString().slice(0, 10), energy: 2 });

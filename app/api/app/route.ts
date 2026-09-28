@@ -4,6 +4,7 @@ import { communicationTopics, decisionFeedback, mirrorQuestions, scenarios } fro
 import { calculateMirrorAggregate } from "../../../lib/results";
 import { careerPriorities, energyTypes, summarizeEnergy } from "../../../lib/additional-experiences";
 import { moduleKeys, resolveModules, type ModuleKey } from "../../../lib/modules";
+import { brazilDay } from "../../../lib/calendar";
 
 type Row = Record<string, unknown>;
 const json = (body: unknown, status=200) => Response.json(body,{status});
@@ -22,10 +23,10 @@ const safeText = (x:unknown,max=120) => typeof x==="string"?x.trim().slice(0,max
 const emailText = (x:unknown) => safeText(x,254).toLowerCase();
 async function member(userId:string,companyId?:string) {return companyId?one("SELECT m.*, c.name AS company_name,c.kind AS company_kind,c.modules AS modules_json FROM members m JOIN companies c ON c.id=m.company_id WHERE m.user_id=? AND m.company_id=? LIMIT 1",userId,companyId):one("SELECT m.*, c.name AS company_name,c.kind AS company_kind,c.modules AS modules_json FROM members m JOIN companies c ON c.id=m.company_id WHERE m.user_id=? ORDER BY m.rowid LIMIT 1",userId)}
 async function invitation(token:string,email:string,isGuest=false) {return isGuest?one("SELECT * FROM invites WHERE token=? AND (email NOT LIKE '%@visitor.synky.local' OR email=?) AND used_at IS NULL AND expires_at>?",token,email,now()):one("SELECT * FROM invites WHERE token=? AND email=? AND used_at IS NULL AND expires_at>?",token,email,now())}
-function publicCycle(row:Row,count:number,teamScores:number[][]) {
+function publicCycle(row:Row,count:number,teamScores:number[][],checkins:Row[]) {
   const self=parse(row.self_scores) as number[];
   const aggregate=calculateMirrorAggregate(String(row.status),teamScores,mirrorQuestions.length);
-  return {id:row.id,status:row.status,createdAt:row.created_at,closedAt:row.closed_at,selfScores:self,responseCount:count,teamScores:aggregate,action:row.action};
+  return {id:row.id,status:row.status,createdAt:row.created_at,closedAt:row.closed_at,selfScores:self,responseCount:count,teamScores:aggregate,action:row.action,checkins};
 }
 export async function GET(request:Request) {
   try {
@@ -52,7 +53,8 @@ export async function GET(request:Request) {
     const cycles=await all("SELECT * FROM mirror_cycles WHERE company_id=? AND leader_id=? ORDER BY created_at DESC",companyId,memberId);
     const mirrors=await Promise.all(cycles.map(async cycle=>{
       const rows=await all("SELECT scores FROM mirror_responses WHERE cycle_id=?",cycle.id);
-      return publicCycle(cycle,rows.length,rows.map(r=>parse(r.scores)).filter(Array.isArray));
+      const checkins=await all("SELECT id,action,note,entry_date AS entryDate,created_at AS createdAt FROM mirror_action_checkins WHERE cycle_id=? ORDER BY entry_date DESC LIMIT 20",cycle.id);
+      return publicCycle(cycle,rows.length,rows.map(r=>parse(r.scores)).filter(Array.isArray),checkins);
     }));
     const mirrorRequests=await all("SELECT i.token,i.reference_id,c.created_at,c.status FROM invites i JOIN mirror_cycles c ON c.id=i.reference_id LEFT JOIN mirror_responses r ON r.cycle_id=c.id AND r.respondent_id=? WHERE i.company_id=? AND i.email IN (?,?) AND i.type='mirror' AND i.used_at IS NULL AND i.expires_at>? AND c.status='open' AND r.id IS NULL",memberId,companyId,user.email.toLowerCase(),String(m.email).toLowerCase(),now());
     const runs=await all("SELECT id,scenario_id,choices,created_at FROM decision_runs WHERE company_id=? AND member_id=? ORDER BY created_at DESC LIMIT 20",companyId,memberId);
@@ -172,7 +174,7 @@ export async function POST(request:Request) {
       await run("UPDATE companies SET modules=? WHERE id=?",JSON.stringify(modules),companyId);
       return json({ok:true});
     }
-    const actionModule:Record<string,ModuleKey>={create_mirror:"mirror",invite_mirror:"mirror",respond_mirror:"mirror",close_mirror:"mirror",choose_action:"mirror",complete_decision:"decisions",create_communication:"communication",respond_communication:"communication",remove_communication:"communication",save_agreement:"communication",add_energy:"energy",delete_energy:"energy",share_energy:"energy",revoke_energy_share:"energy",save_career:"career",create_thermometer:"thermometer",respond_thermometer:"thermometer",close_thermometer_round:"thermometer",new_thermometer_round:"thermometer"};
+    const actionModule:Record<string,ModuleKey>={create_mirror:"mirror",invite_mirror:"mirror",respond_mirror:"mirror",close_mirror:"mirror",choose_action:"mirror",add_action_checkin:"mirror",complete_decision:"decisions",create_communication:"communication",respond_communication:"communication",remove_communication:"communication",save_agreement:"communication",add_energy:"energy",delete_energy:"energy",share_energy:"energy",revoke_energy_share:"energy",save_career:"career",create_thermometer:"thermometer",respond_thermometer:"thermometer",close_thermometer_round:"thermometer",new_thermometer_round:"thermometer"};
     if(actionModule[action]&&!resolveModules(m.modules_json)[actionModule[action]])return fail("Esta experiência está indisponível neste ambiente.",403);
     if(action==="invite_member") {
       if(!["admin","rh"].includes(role))return fail("Apenas administração e RH podem convidar pessoas.",403);
@@ -227,6 +229,16 @@ export async function POST(request:Request) {
       const cycle=await one("SELECT id FROM mirror_cycles WHERE id=? AND company_id=? AND leader_id=?",p.cycleId,companyId,memberId);if(!cycle)return fail("Ciclo não encontrado.",404);
       if(action==="close_mirror")await run("UPDATE mirror_cycles SET status='closed',closed_at=? WHERE id=?",now(),cycle.id);
       else {const text=safeText(p.text,240);if(!text)return fail("Escolha uma ação.");await run("UPDATE mirror_cycles SET action=? WHERE id=?",text,cycle.id)}
+      return json({ok:true});
+    }
+    if(action==="add_action_checkin") {
+      const cycle=await one("SELECT id,status,action FROM mirror_cycles WHERE id=? AND company_id=? AND leader_id=?",p.cycleId,companyId,memberId);
+      if(!cycle||cycle.status!=="closed"||!cycle.action)return fail("Escolha uma ação em um ciclo concluído antes de registrar a prática.",403);
+      const note=safeText(p.note,280);
+      if(note.length<8)return fail("Conte em uma frase o que aconteceu (mínimo de 8 caracteres).");
+      const entryDate=brazilDay();
+      if(await one("SELECT id FROM mirror_action_checkins WHERE cycle_id=? AND entry_date=?",cycle.id,entryDate))return fail("Você já registrou uma prática hoje neste ciclo.",409);
+      await run("INSERT INTO mirror_action_checkins(id,cycle_id,action,note,entry_date,created_at) VALUES(?,?,?,?,?,?)",id(),cycle.id,cycle.action,note,entryDate,now());
       return json({ok:true});
     }
     if(action==="complete_decision") {

@@ -22,7 +22,7 @@ test("mirror highlights use comparable scores and ignore missing team answers",(
   assert.deepEqual(mirrorHighlights([4,3],[null,null]),{agreement:null,gap:null});
 });
 test("all scenarios have three playable stages and deterministic feedback",()=>{
-  assert.equal(scenarios.length,3);
+  assert.equal(scenarios.length,6);
   for(const scenario of scenarios){
     assert.equal(scenario.scenes.length,3);
     assert.ok(scenario.scenes.every(scene=>scene.choices.length>=2));
