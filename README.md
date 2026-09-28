@@ -2,7 +2,7 @@
 
 Plataforma de experiências de desenvolvimento humano em português do Brasil.
 
-A página pública tem catálogo, páginas próprias das seis experiências e uma página para empresas. Os links entre páginas usam navegação HTML nativa porque a navegação cliente do `next/link` falha no runtime vinext da hospedagem Sites.
+A página pública tem catálogo, páginas próprias das seis experiências e uma página para empresas. Os links entre páginas usam navegação HTML nativa porque a navegação cliente do `next/link` falha no runtime vinext da hospedagem Sites. O acesso às experiências não exige login: cada visitante recebe um espaço próprio, associado a um cookie seguro do navegador.
 
 ## Funcional nesta versão
 
@@ -16,7 +16,7 @@ A página pública tem catálogo, páginas próprias das seis experiências e um
 - **Administração:** criação e alternância entre empresas pelo proprietário; nome e módulos configuráveis pelo administrador de cada empresa.
 - Empresas, perfis e dados persistidos em D1; API aplica autorização por empresa e papel.
 
-O primeiro acesso com a conta proprietária `contato@somus.group` configura a empresa inicial. Convites são gerados como links para compartilhamento manual e expiram após sete dias (acesso à empresa) ou quatorze dias (experiências). Participantes precisam entrar com o mesmo e-mail do convite.
+Visitantes sem conta recebem automaticamente um ambiente pessoal e podem usar as seis experiências. Seus dados são separados dos demais visitantes. Para convidados sem conta, o próprio link funciona como chave de acesso; depois de aceito, fica associado àquele navegador. Convites expiram após sete dias (acesso à empresa) ou quatorze dias (experiências). Contas ChatGPT existentes continuam podendo entrar para administração; nesse caso, o convite exige o e-mail informado.
 
 ## Verificação
 
@@ -26,4 +26,4 @@ O primeiro acesso com a conta proprietária `contato@somus.group` configura a em
 
 ## Limites atuais
 
-O envio automático de convites por e-mail ainda não está configurado. Convites funcionam por links copiados da plataforma. A integração com o DISC anterior foi retirada do escopo a pedido do proprietário.
+O envio automático de convites por e-mail ainda não está configurado. Convites funcionam por links copiados da plataforma. Sem login, o histórico depende do cookie deste navegador e não acompanha a pessoa em outro dispositivo. A integração com o DISC anterior foi retirada do escopo a pedido do proprietário.

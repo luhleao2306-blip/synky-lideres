@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { getChatGPTUser } from "../../chatgpt-auth";
+import { getAppUser } from "../../guest-auth";
 import { communicationTopics, decisionFeedback, mirrorQuestions, scenarios } from "../../../lib/experiences";
 import { calculateMirrorAggregate } from "../../../lib/results";
 import { careerPriorities, energyTypes, summarizeEnergy } from "../../../lib/additional-experiences";
@@ -21,7 +21,7 @@ const validEnergy = (x:unknown) => Number.isInteger(x)&&Number(x)>=-2&&Number(x)
 const safeText = (x:unknown,max=120) => typeof x==="string"?x.trim().slice(0,max):"";
 const emailText = (x:unknown) => safeText(x,254).toLowerCase();
 async function member(userId:string,companyId?:string) {return companyId?one("SELECT m.*, c.name AS company_name,c.modules AS modules_json FROM members m JOIN companies c ON c.id=m.company_id WHERE m.user_id=? AND m.company_id=? LIMIT 1",userId,companyId):one("SELECT m.*, c.name AS company_name,c.modules AS modules_json FROM members m JOIN companies c ON c.id=m.company_id WHERE m.user_id=? ORDER BY m.rowid LIMIT 1",userId)}
-async function invitation(token:string,email:string) {return one("SELECT * FROM invites WHERE token=? AND email=? AND used_at IS NULL AND expires_at>?",token,email,now())}
+async function invitation(token:string,email:string,isGuest=false) {return isGuest?one("SELECT * FROM invites WHERE token=? AND (email NOT LIKE '%@visitor.synky.local' OR email=?) AND used_at IS NULL AND expires_at>?",token,email,now()):one("SELECT * FROM invites WHERE token=? AND email=? AND used_at IS NULL AND expires_at>?",token,email,now())}
 function publicCycle(row:Row,count:number,teamScores:number[][]) {
   const self=parse(row.self_scores) as number[];
   const aggregate=calculateMirrorAggregate(String(row.status),teamScores,mirrorQuestions.length);
@@ -29,15 +29,25 @@ function publicCycle(row:Row,count:number,teamScores:number[][]) {
 }
 export async function GET(request:Request) {
   try {
-    const user=await getChatGPTUser(); if(!user) return fail("Entre para continuar.",401);
+    const access=await getAppUser(request,true),user=access.user;
+    if(!user)return fail("Não foi possível iniciar sua visita.",401);
+    const respond=(body:unknown,status=200)=>Response.json(body,{status,headers:access.cookie?{"Set-Cookie":access.cookie}:{}});
     const url=new URL(request.url);
     const token=url.searchParams.get("invite");
-    const invite=token?await invitation(token,user.email.toLowerCase()):null;
+    const invite=token?await invitation(token,user.email.toLowerCase(),user.isGuest):null;
     const companySelection=invite?String(invite.company_id):url.searchParams.get("company")||undefined;
-    const m=await member(user.userId,companySelection);
+    let m=await member(user.userId,companySelection);
+    if(!m&&!token&&!companySelection){
+      const companyId=id();
+      await db().batch([
+        db().prepare("INSERT INTO companies(id,name,created_at) VALUES(?,?,?)").bind(companyId,"Meu espaço",now()),
+        db().prepare("INSERT INTO members(id,company_id,user_id,email,name,role) VALUES(?,?,?,?,?,?)").bind(id(),companyId,user.userId,user.email.toLowerCase(),user.displayName,"admin"),
+      ]);
+      m=await member(user.userId,companyId);
+    }
     const memberships=await all("SELECT m.company_id AS companyId,m.role,c.name AS companyName FROM members m JOIN companies c ON c.id=m.company_id WHERE m.user_id=? ORDER BY c.name",user.userId);
-    const platformAdmin=user.email.toLowerCase()==="contato@somus.group"||process.env.NODE_ENV==="development";
-    if(!m){if(companySelection&&!invite&&memberships.length)return fail("Você não tem acesso a esta empresa.",403);return json({needsSetup:platformAdmin&&!(await one("SELECT id FROM companies LIMIT 1")),invite:invite?{type:invite.type,token,companyId:invite.company_id,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite,user:{name:user.displayName,email:user.email},memberships,platformAdmin})}
+    const platformAdmin=!user.isGuest&&(user.email.toLowerCase()==="contato@somus.group"||process.env.NODE_ENV==="development");
+    if(!m){if(companySelection&&!invite&&memberships.length)return respond({error:"Você não tem acesso a esta empresa."},403);return respond({needsSetup:platformAdmin&&!(await one("SELECT id FROM companies LIMIT 1")),invite:invite?{type:invite.type,token,companyId:invite.company_id,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite,user:{name:user.displayName,email:user.email},isGuest:user.isGuest,memberships,platformAdmin})}
     const companyId=String(m.company_id),memberId=String(m.id);
     const cycles=await all("SELECT * FROM mirror_cycles WHERE company_id=? AND leader_id=? ORDER BY created_at DESC",companyId,memberId);
     const mirrors=await Promise.all(cycles.map(async cycle=>{
@@ -89,12 +99,12 @@ export async function GET(request:Request) {
       thermometerTracks:Number((await one("SELECT COUNT(*) AS n FROM thermometer_tracks WHERE company_id=?",companyId))?.n||0),
     }:null;
     const platformCompanies=platformAdmin?await all("SELECT c.id,c.name,c.created_at AS createdAt,COUNT(m.id) AS people FROM companies c LEFT JOIN members m ON m.company_id=c.id GROUP BY c.id ORDER BY c.created_at DESC"):[];
-    return json({user:{name:user.displayName,email:user.email},membership:{id:memberId,role:m.role,companyId,companyName:m.company_name},memberships,platformAdmin,platformCompanies,moduleSettings:resolveModules(m.modules_json),mirrors,mirrorRequests,runs:runs.map(r=>({...r,choices:parse(r.choices)})),pairs,pendingCommunication,energyEntries:energyRows,energySummary,energyShares,sharedEnergy,careerRuns,thermometerTracks,thermometerRequests:thermometerRequests.map(row=>({...row,dimensions:parse(row.dimensions)})),people,pendingInvites,companyStats,invite:invite?{type:invite.type,token,companyId:invite.company_id,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite});
+    return respond({user:{name:user.isGuest?String(m.name):user.displayName,email:user.email},isGuest:user.isGuest,membership:{id:memberId,role:m.role,companyId,companyName:m.company_name},memberships,platformAdmin,platformCompanies,moduleSettings:resolveModules(m.modules_json),mirrors,mirrorRequests,runs:runs.map(r=>({...r,choices:parse(r.choices)})),pairs,pendingCommunication,energyEntries:energyRows,energySummary,energyShares,sharedEnergy,careerRuns,thermometerTracks,thermometerRequests:thermometerRequests.map(row=>({...row,dimensions:parse(row.dimensions)})),people,pendingInvites,companyStats,invite:invite?{type:invite.type,token,companyId:invite.company_id,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite});
   } catch(e){console.error("app get failed",e);return fail("Não foi possível carregar os dados. Tente novamente.",500)}
 }
 export async function POST(request:Request) {
   try {
-    const user=await getChatGPTUser(); if(!user) return fail("Entre para continuar.",401);
+    const user=(await getAppUser(request)).user; if(!user) return fail("Abra a plataforma para iniciar sua visita.",401);
     const p=await request.json() as Record<string,unknown>;
     const action=safeText(p.action);
     const m=await member(user.userId,safeText(p.companyId,100)||undefined);
@@ -120,19 +130,26 @@ export async function POST(request:Request) {
       return json({ok:true,companyId});
     }
     if(action==="join") {
-      const token=safeText(p.token,100);const invite=await invitation(token,user.email.toLowerCase());if(!invite)return fail("Convite inválido ou expirado.",404);
+      const token=safeText(p.token,100);const invite=await invitation(token,user.email.toLowerCase(),user.isGuest);if(!invite)return fail("Convite inválido ou expirado.",404);
       let invitedMember=await member(user.userId,String(invite.company_id));
       if(!invitedMember) {
         const memberId=id();
         await run("INSERT INTO members(id,company_id,user_id,email,name,role) VALUES(?,?,?,?,?,?)",memberId,invite.company_id,user.userId,user.email.toLowerCase(),user.displayName,invite.role||"participant");
         invitedMember=await member(user.userId,String(invite.company_id));
       }
+      if(user.isGuest)await run("UPDATE invites SET email=? WHERE token=?",user.email.toLowerCase(),token);
       if(invite.type==="member") await run("UPDATE invites SET used_at=? WHERE token=?",now(),token);
       if(invite.type==="communication") await run("UPDATE communication_pairs SET partner_id=? WHERE id=? AND company_id=? AND status='pending'",invitedMember?.id,invite.reference_id,invite.company_id);
       return json({ok:true,type:invite.type,companyId:invite.company_id,referenceId:invite.reference_id});
     }
     if(!m)return fail("Você ainda não participa de uma empresa.",403);
     const companyId=String(m.company_id),memberId=String(m.id),role=String(m.role);
+    if(action==="rename_profile") {
+      const name=safeText(p.name,70);
+      if(name.length<2)return fail("Informe um nome com pelo menos dois caracteres.");
+      await run("UPDATE members SET name=? WHERE id=? AND company_id=?",name,memberId,companyId);
+      return json({ok:true});
+    }
     if(action==="rename_company") {
       if(role!=="admin")return fail("Apenas o administrador pode alterar a empresa.",403);
       const name=safeText(p.name,90);if(name.length<2)return fail("Informe o nome da empresa.");
@@ -180,7 +197,7 @@ export async function POST(request:Request) {
       return json({ok:true,link:`${new URL(request.url).origin}/app?invite=${token}`});
     }
     if(action==="respond_mirror") {
-      const token=safeText(p.token,100),invite=await invitation(token,user.email.toLowerCase());
+      const token=safeText(p.token,100),invite=await invitation(token,user.email.toLowerCase(),user.isGuest);
       if(!invite||invite.type!=="mirror"||invite.company_id!==companyId)return fail("Convite inválido ou expirado.",404);
       const cycle=await one("SELECT * FROM mirror_cycles WHERE id=? AND company_id=? AND status='open'",invite.reference_id,companyId);
       if(!cycle||cycle.leader_id===memberId)return fail("Esta avaliação não está disponível.",403);
@@ -216,9 +233,9 @@ export async function POST(request:Request) {
       return json({ok:true,link:`${new URL(request.url).origin}/app?invite=${token}`});
     }
     if(action==="respond_communication") {
-      const token=safeText(p.token,100),invite=await invitation(token,user.email.toLowerCase());
+      const token=safeText(p.token,100),invite=await invitation(token,user.email.toLowerCase(),user.isGuest);
       if(!invite||invite.type!=="communication"||invite.company_id!==companyId)return fail("Convite inválido ou expirado.",404);
-      const pair=await one("SELECT * FROM communication_pairs WHERE id=? AND company_id=? AND status='pending' AND partner_email=?",invite.reference_id,companyId,user.email.toLowerCase());
+      const pair=await (user.isGuest?one("SELECT * FROM communication_pairs WHERE id=? AND company_id=? AND status='pending'",invite.reference_id,companyId):one("SELECT * FROM communication_pairs WHERE id=? AND company_id=? AND status='pending' AND partner_email=?",invite.reference_id,companyId,user.email.toLowerCase()));
       if(!pair||!validPreferences(p.preferences)||p.consent!==true)return fail("Respostas ou consentimento pendentes.");
       await db().batch([
         db().prepare("INSERT INTO communication_responses(id,pair_id,member_id,preferences,consent,created_at) VALUES(?,?,?,?,?,?)").bind(id(),pair.id,memberId,JSON.stringify(p.preferences),1,now()),
