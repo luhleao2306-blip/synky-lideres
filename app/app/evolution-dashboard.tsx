@@ -8,7 +8,7 @@ import ExperienceArtwork from "./experience-artwork";
 
 type Cycle={id:string;status:string;createdAt:string;responseCount:number;action:string|null;checkinCount:number;checkins:{id:string;action:string;note:string;entryDate:string;createdAt:string}[]};
 type DecisionRun={id:string;scenario_id:string;choices:number[];created_at:string};
-type Pair={id:string;ready:boolean;createdAt:string};
+type Pair={id:string;ready:boolean;answered:boolean;createdAt:string};
 type View=ModuleKey;
 type Data={role:string;modules:ModuleSettings;mirrors:Cycle[];runs:DecisionRun[];decisionCount:number;pairs:Pair[];energyEntries:EnergyEntry[];careerRuns:CareerRun[];thermometerTracks:ThermometerTrack[]};
 type Event={id:string;at:string;title:string;detail:string;module:ModuleKey;group:"practice"|"experience";open:()=>void};
@@ -24,7 +24,7 @@ export default function EvolutionDashboard({data,onNavigate,onOpenMirror,onOpenD
       ...cycle.checkins.map(checkin=>({id:`practice-${checkin.id}`,at:checkin.createdAt,title:"Ação colocada em prática",detail:checkin.note,module:"mirror" as const,group:"practice" as const,open:()=>onOpenMirror(cycle.id)})),
     ]),
     ...data.runs.map(run=>({id:`decision-${run.id}`,at:run.created_at,title:"Cenário de decisão concluído",detail:scenarios.find(item=>item.id===run.scenario_id)?.title||"Decisões Sob Pressão",module:"decisions" as const,group:"experience" as const,open:()=>onOpenDecision(run)})),
-    ...data.pairs.map(pair=>({id:`pair-${pair.id}`,at:pair.createdAt,title:"Conversa em dupla iniciada",detail:pair.ready?"A comparação já está disponível.":"Aguardando a outra pessoa responder.",module:"communication" as const,group:"experience" as const,open:()=>onNavigate("communication")})),
+    ...data.pairs.map(pair=>({id:`pair-${pair.id}`,at:pair.createdAt,title:"Dupla de comunicação iniciada",detail:pair.ready?"A comparação já está disponível.":pair.answered?"Sua resposta está pronta. Aguardando a outra pessoa.":"Sua resposta ainda está pendente.",module:"communication" as const,group:"experience" as const,open:()=>onNavigate("communication")})),
     ...data.energyEntries.map(entry=>({id:`energy-${entry.id}`,at:entry.createdAt,title:"Energia registrada",detail:`${entry.activityType} · ${entry.activity}`,module:"energy" as const,group:"practice" as const,open:()=>onNavigate("energy")})),
     ...data.careerRuns.map(run=>({id:`career-${run.id}`,at:run.createdAt,title:"Bússola de Carreira respondida",detail:"Suas prioridades foram registradas para comparação.",module:"career" as const,group:"experience" as const,open:()=>onNavigate("career")})),
     ...data.thermometerTracks.map(track=>({id:`track-${track.id}`,at:track.createdAt,title:"Acompanhamento do time iniciado",detail:`${track.rounds.length} rodada${track.rounds.length===1?"":"s"} de acompanhamento.`,module:"thermometer" as const,group:"experience" as const,open:()=>onNavigate("thermometer")})),

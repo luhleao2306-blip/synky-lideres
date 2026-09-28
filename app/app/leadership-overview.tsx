@@ -18,10 +18,16 @@ export default function LeadershipOverview({data,onNavigate,query=""}:{data:Over
   const pendingCount=data.pendingInvites?.length??0;
   const peopleCount=data.companyStats?.people??0;
   const incoming=data.request&&((data.request.type==="mirror"&&data.modules.mirror)||(data.request.type==="communication"&&data.modules.communication))?data.request:null;
+  const waitingPair=data.modules.communication?data.pairs.find(pair=>!pair.ready&&!pair.answered):undefined;
+  const waitingInvitation=data.modules.communication&&(data.communicationInvites?.length??0)>0;
   const next:NextStep=incoming?{
     eyebrow:"SUA PARTICIPAÇÃO IMPORTA",title:incoming.type==="mirror"?"Seu time quer ouvir sua perspectiva.":"Uma conversa melhor começa com você.",
     body:incoming.type==="mirror"?"Responda ao convite do Espelho. Sua percepção individual fica protegida.":"Compare preferências e encontre acordos práticos para trabalhar melhor em dupla.",
     button:"Responder convite",view:incoming.type==="mirror"?"mirror":"communication",
+  }:waitingPair||waitingInvitation?{
+    eyebrow:"CONVERSA EM DUPLA",title:"Sua perspectiva está esperando por você.",
+    body:waitingPair?.isCreator?"Você criou uma dupla e ainda não respondeu. Registre suas preferências para avançar.":"Alguém convidou você para uma comparação. Responda no seu tempo; o resultado aparece quando ambas as pessoas terminarem.",
+    button:"Responder minha parte",view:"communication",
   }:openCycle?{
     eyebrow:"CICLO EM ANDAMENTO",title:openCycle.responseCount?"Ouça o time antes do próximo passo.":"Abra a escuta para o seu time.",
     body:openCycle.responseCount?"Seu Espelho recebeu "+openCycle.responseCount+" resposta"+(openCycle.responseCount===1?"":"s")+". Acompanhe a participação e prepare a conversa de devolutiva.":"O Espelho está aberto. Convide pessoas para compartilhar perspectivas e começar a conversa.",
