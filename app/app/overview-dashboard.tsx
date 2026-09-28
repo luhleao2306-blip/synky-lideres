@@ -1,5 +1,5 @@
 "use client";
-import { Activity, ArrowRight, BarChart3, Clock3, Compass, Sparkles, TrendingUp, UsersRound } from "lucide-react";
+import { ArrowRight, BarChart3, Clock3, Sparkles, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type ModuleSettings } from "@/lib/modules";
 
@@ -10,12 +10,12 @@ type Request={type:string;token:string}|null;
 type OverviewData={name:string;role:string;company:string;personal:boolean;modules:ModuleSettings;mirrors:Cycle[];runs:Run[];pairs:Pair[];energyEntries:{createdAt:string}[];careerRuns:{createdAt:string}[];thermometerTracks:{createdAt:string}[];companyStats?:{people:number;mirrorCycles:number;decisionRuns:number;careerRuns:number;thermometerTracks:number}|null;request:Request};
 type View="mirror"|"decisions"|"communication"|"energy"|"career"|"thermometer"|"evolution"|"team"|"experiences";
 const experiences=[
-  {key:"mirror" as const,title:"Espelho do Líder",description:"Receba percepções do seu time e amplie sua visão como líder.",className:"mirror"},
-  {key:"decisions" as const,title:"Decisões Sob Pressão",description:"Pratique decisões reais, explore caminhos e veja os impactos.",className:"decisions"},
-  {key:"communication" as const,title:"Raio X da Comunicação",description:"Descubra como sua mensagem é percebida e onde pode evoluir.",className:"communication"},
-  {key:"energy" as const,title:"Mapa de Energia",description:"Registre atividades e perceba o que dá energia ou desgasta no trabalho.",className:"energy"},
-  {key:"career" as const,title:"Bússola de Carreira",description:"Explore prioridades em dilemas profissionais concretos.",className:"career"},
-  {key:"thermometer" as const,title:"Termômetro de Liderança",description:"Acompanhe comportamentos escolhidos após um ciclo do Espelho.",className:"thermometer"},
+  {key:"mirror" as const,title:"Espelho do Líder",description:"Receba percepções do seu time e amplie sua visão como líder.",className:"mirror",image:"/images/leader-mirror.webp"},
+  {key:"decisions" as const,title:"Decisões Sob Pressão",description:"Pratique decisões reais, explore caminhos e veja os impactos.",className:"decisions",image:"/images/leader-decisions.webp"},
+  {key:"communication" as const,title:"Raio X da Comunicação",description:"Descubra como sua mensagem é percebida e onde pode evoluir.",className:"communication",image:"/images/leader-communication.webp"},
+  {key:"energy" as const,title:"Mapa de Energia",description:"Registre atividades e perceba o que dá energia ou desgasta no trabalho.",className:"energy",image:"/images/leader-energy.webp"},
+  {key:"career" as const,title:"Bússola de Carreira",description:"Explore prioridades em dilemas profissionais concretos.",className:"career",image:"/images/leader-career.webp"},
+  {key:"thermometer" as const,title:"Termômetro de Liderança",description:"Acompanhe comportamentos escolhidos após um ciclo do Espelho.",className:"thermometer",image:"/images/leader-thermometer.webp"},
 ];
 function activitySeries(data:OverviewData){
   const today=new Date(),months=Array.from({length:6},(_,i)=>{const d=new Date(today.getFullYear(),today.getMonth()-5+i,1);return {year:d.getFullYear(),month:d.getMonth(),label:d.toLocaleDateString("pt-BR",{month:"short"}).replace(".","").toUpperCase()}});
@@ -29,8 +29,9 @@ export function ExperienceCards({data,onNavigate,query="",limit=6}:{data:Overvie
   return <div className="reference-experience-grid">{filtered.map(x=>{
     const mirror=data.mirrors[0],count=x.key==="mirror"?mirror?.responseCount:undefined;
     const details=x.key==="mirror"?(mirror?`${count} de 5 respostas mínimas`:"8 min · para líderes"):x.key==="decisions"?(data.runs.length?`${data.runs.length} cenário(s) concluído(s)`:"Simulação interativa · 7 min"):x.key==="communication"?(data.pairs.length?`${data.pairs.length} comparação(ões)`:"Em dupla · 10 min"):x.key==="energy"?(data.energyEntries.length?`${data.energyEntries.length} registro(s)`:"Diário pessoal · 2 min"):x.key==="career"?(data.careerRuns.length?`${data.careerRuns.length} tentativa(s)`:"8 escolhas · 6 min"):(data.thermometerTracks.length?`${data.thermometerTracks.length} acompanhamento(s)`:"Após o Espelho");
-    const ArtIcon=x.key==="energy"?Activity:x.key==="career"?Compass:x.key==="thermometer"?TrendingUp:null;
-    return <article className="reference-experience-card" key={x.key}><button className={`reference-art ${x.className}`} onClick={()=>onNavigate(x.key)} aria-label={`Abrir ${x.title}`}>{ArtIcon&&<span className="reference-art-icon" aria-hidden="true"><ArtIcon size={58} strokeWidth={1.35}/></span>}</button><div className="reference-experience-body"><h3>{x.title}</h3><p>{x.description}</p><div className="reference-card-meta"><span>{details}</span>{x.key!=="mirror"&&<Clock3 size={14}/>}</div>{x.key==="mirror"&&mirror&&<div className="reference-progress"><span style={{width:`${Math.min(100,mirror.responseCount/5*100)}%`}}/></div>}<Button variant={x.key==="decisions"?"default":"outline"} className="reference-card-button" onClick={()=>onNavigate(x.key)}>{x.key==="mirror"&&mirror?"Acompanhar":x.key==="decisions"?"Continuar":"Começar"} <ArrowRight size={16}/></Button></div></article>
+    // These local WebP assets are already sized and compressed for the card crop.
+    // eslint-disable-next-line @next/next/no-img-element
+    return <article className="reference-experience-card" key={x.key}><button className={`reference-art ${x.className}`} onClick={()=>onNavigate(x.key)} aria-label={`Abrir ${x.title}`}><img src={x.image} alt="" loading={limit===3?"eager":"lazy"} decoding="async"/></button><div className="reference-experience-body"><h3>{x.title}</h3><p>{x.description}</p><div className="reference-card-meta"><span>{details}</span>{x.key!=="mirror"&&<Clock3 size={14}/>}</div>{x.key==="mirror"&&mirror&&<div className="reference-progress"><span style={{width:`${Math.min(100,mirror.responseCount/5*100)}%`}}/></div>}<Button variant={x.key==="decisions"?"default":"outline"} className="reference-card-button" onClick={()=>onNavigate(x.key)}>{x.key==="mirror"&&mirror?"Acompanhar":x.key==="decisions"?"Continuar":"Começar"} <ArrowRight size={16}/></Button></div></article>
   })}{!filtered.length&&<div className="reference-empty">Nenhuma experiência corresponde à busca.</div>}</div>;
 }
 export default function OverviewDashboard({data,onNavigate,query=""}:{data:OverviewData;onNavigate:(v:View)=>void;query?:string}){

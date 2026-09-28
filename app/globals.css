@@ -47,22 +47,14 @@
 .app-content>.module-heading:not(.experience-intro) h1{font-size:clamp(40px,3.8vw,54px);line-height:1.06}
 .reference-experience-grid{gap:16px}
 .reference-experience-card{padding:9px;border-radius:16px;min-height:300px}
-.reference-art{position:relative;display:grid;place-items:center;height:auto;min-height:120px;aspect-ratio:1.8;background-size:300% auto;background-position-y:center;border-radius:11px;overflow:hidden}
+.reference-art{position:relative;display:block;height:auto;min-height:120px;aspect-ratio:1.8;padding:0;border-radius:11px;overflow:hidden;background:#e7f2e9}
+.reference-art.mirror,.reference-art.decisions,.reference-art.communication,.reference-art.energy,.reference-art.career,.reference-art.thermometer{background-image:none}
+.reference-art img{display:block;width:100%;height:100%;aspect-ratio:1.8;object-fit:cover;object-position:center;transition:transform .3s ease}
+.reference-art:hover img,.reference-art:focus-visible img{transform:scale(1.035)}
 .reference-experience-body{padding:14px 8px 6px}
 .reference-experience-body h3{font-size:18px;line-height:1.13}
 .reference-experience-body p{font-size:13px;line-height:1.42;min-height:53px}
 .reference-card-meta{font-size:11px}
-.reference-art.energy,.reference-art.career,.reference-art.thermometer{background-size:cover}
-.reference-art.energy{background-image:radial-gradient(circle at 74% 78%,#abd9ba 0 16%,transparent 17%),linear-gradient(135deg,#eaf8ed,#b7dfc4)}
-.reference-art.career{background-image:radial-gradient(circle at 80% 30%,#c2e7cc 0 18%,transparent 19%),linear-gradient(135deg,#f2f8ec,#cadfc8)}
-.reference-art.thermometer{background-image:radial-gradient(circle at 25% 74%,#c5e5ce 0 16%,transparent 17%),linear-gradient(135deg,#e8f7ed,#b9dfc9)}
-.reference-art.energy::before,.reference-art.career::before,.reference-art.thermometer::before{content:"";position:absolute;width:170px;height:170px;border:1px solid #2b91636b;border-radius:50%;transform:rotate(-22deg)}
-.reference-art.energy::before{right:-24px;top:-75px}
-.reference-art.career::before{left:-34px;bottom:-90px}
-.reference-art.thermometer::before{right:12px;bottom:-110px}
-.reference-art-icon{z-index:1;display:grid;place-items:center;width:90px;height:90px;border:1px solid #ffffffb8;border-radius:24px;background:#ffffffba;color:#116544;box-shadow:0 15px 35px #1553391b;transform:rotate(-7deg)}
-.reference-art.career .reference-art-icon{transform:rotate(7deg)}
-.reference-art.thermometer .reference-art-icon{transform:rotate(-3deg)}
 .landing-path:after{background-size:300% auto;background-position-y:center}
 @media(max-width:900px){.reference-experience-grid{gap:12px}.reference-experience-card{min-height:0}.reference-experience-body p{min-height:0}}
 @media(max-width:560px){.app-content>.module-heading:not(.experience-intro) h1{font-size:clamp(36px,10vw,44px)}.reference-experience-grid{gap:14px}.reference-art{min-height:0;aspect-ratio:1.8}.reference-experience-body{padding:14px 9px 8px}.reference-experience-body h3{font-size:19px}.reference-experience-body p{font-size:13px}}
