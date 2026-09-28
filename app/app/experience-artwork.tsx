@@ -1,21 +1,21 @@
-import { Activity, Compass, GitBranch, MessageCircleMore, TrendingUp, UsersRound } from "lucide-react";
 import type { ModuleKey } from "@/lib/modules";
 
 const artwork = {
-  mirror: { number: "01", label: "ESCUTA", words: ["Perceber", "Comparar", "Agir"], Icon: UsersRound },
-  decisions: { number: "02", label: "ESCOLHAS", words: ["Cenário", "Decisão", "Impacto"], Icon: GitBranch },
-  communication: { number: "03", label: "DIÁLOGO", words: ["Escutar", "Alinhar", "Conversar"], Icon: MessageCircleMore },
-  energy: { number: "04", label: "RITMO", words: ["Registrar", "Observar", "Ajustar"], Icon: Activity },
-  career: { number: "05", label: "DIREÇÃO", words: ["Priorizar", "Escolher", "Avançar"], Icon: Compass },
-  thermometer: { number: "06", label: "PRÁTICA", words: ["Definir", "Praticar", "Revisar"], Icon: TrendingUp },
-} satisfies Record<ModuleKey, { number: string; label: string; words: string[]; Icon: typeof UsersRound }>;
+  mirror: { image: "/images/experiences/mirror.webp", label: "ESCUTA DO TIME" },
+  decisions: { image: "/images/experiences/decisions.webp", label: "DECISÕES REAIS" },
+  communication: { image: "/images/experiences/communication.webp", label: "CONVERSA EM DUPLA" },
+  energy: { image: "/images/experiences/energy.webp", label: "ROTINA E ENERGIA" },
+  career: { image: "/images/experiences/career.webp", label: "ESCOLHAS DE CARREIRA" },
+  thermometer: { image: "/images/experiences/thermometer.webp", label: "EVOLUÇÃO DO TIME" },
+} satisfies Record<ModuleKey, { image: string; label: string }>;
 
 export default function ExperienceArtwork({ kind, className = "" }: { kind: ModuleKey; className?: string }) {
-  const { number, label, words, Icon } = artwork[kind];
-  return <div className={`experience-artwork experience-artwork-${kind} ${className}`} aria-hidden="true">
-    <span className="experience-artwork-number">{number}</span>
+  const { image, label } = artwork[kind];
+  return <div
+    className={`experience-artwork experience-artwork-${kind} ${className}`}
+    style={{ backgroundImage: `linear-gradient(0deg, rgba(8, 35, 23, .58), transparent 48%), url("${image}")` }}
+    aria-hidden="true"
+  >
     <span className="experience-artwork-label">{label}</span>
-    <span className="experience-artwork-icon"><Icon size={30} strokeWidth={1.7}/></span>
-    <span className="experience-artwork-steps">{words.map((word, index) => <span key={word}>{index > 0 && <i/>}{word}</span>)}</span>
   </div>;
 }
