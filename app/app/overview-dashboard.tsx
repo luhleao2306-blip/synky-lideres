@@ -1,5 +1,5 @@
 "use client";
-import { ArrowRight, BarChart3, Clock3, Sparkles, UsersRound } from "lucide-react";
+import { Activity, ArrowRight, BarChart3, Clock3, Compass, Sparkles, TrendingUp, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type ModuleSettings } from "@/lib/modules";
 
@@ -29,7 +29,8 @@ export function ExperienceCards({data,onNavigate,query="",limit=6}:{data:Overvie
   return <div className="reference-experience-grid">{filtered.map(x=>{
     const mirror=data.mirrors[0],count=x.key==="mirror"?mirror?.responseCount:undefined;
     const details=x.key==="mirror"?(mirror?`${count} de 5 respostas mínimas`:"8 min · para líderes"):x.key==="decisions"?(data.runs.length?`${data.runs.length} cenário(s) concluído(s)`:"Simulação interativa · 7 min"):x.key==="communication"?(data.pairs.length?`${data.pairs.length} comparação(ões)`:"Em dupla · 10 min"):x.key==="energy"?(data.energyEntries.length?`${data.energyEntries.length} registro(s)`:"Diário pessoal · 2 min"):x.key==="career"?(data.careerRuns.length?`${data.careerRuns.length} tentativa(s)`:"8 escolhas · 6 min"):(data.thermometerTracks.length?`${data.thermometerTracks.length} acompanhamento(s)`:"Após o Espelho");
-    return <article className="reference-experience-card" key={x.key}><button className={`reference-art ${x.className}`} onClick={()=>onNavigate(x.key)} aria-label={`Abrir ${x.title}`}/><div className="reference-experience-body"><h3>{x.title}</h3><p>{x.description}</p><div className="reference-card-meta"><span>{details}</span>{x.key!=="mirror"&&<Clock3 size={14}/>}</div>{x.key==="mirror"&&mirror&&<div className="reference-progress"><span style={{width:`${Math.min(100,mirror.responseCount/5*100)}%`}}/></div>}<Button variant={x.key==="decisions"?"default":"outline"} className="reference-card-button" onClick={()=>onNavigate(x.key)}>{x.key==="mirror"&&mirror?"Acompanhar":x.key==="decisions"?"Continuar":"Começar"} <ArrowRight size={16}/></Button></div></article>
+    const ArtIcon=x.key==="energy"?Activity:x.key==="career"?Compass:x.key==="thermometer"?TrendingUp:null;
+    return <article className="reference-experience-card" key={x.key}><button className={`reference-art ${x.className}`} onClick={()=>onNavigate(x.key)} aria-label={`Abrir ${x.title}`}>{ArtIcon&&<span className="reference-art-icon" aria-hidden="true"><ArtIcon size={58} strokeWidth={1.35}/></span>}</button><div className="reference-experience-body"><h3>{x.title}</h3><p>{x.description}</p><div className="reference-card-meta"><span>{details}</span>{x.key!=="mirror"&&<Clock3 size={14}/>}</div>{x.key==="mirror"&&mirror&&<div className="reference-progress"><span style={{width:`${Math.min(100,mirror.responseCount/5*100)}%`}}/></div>}<Button variant={x.key==="decisions"?"default":"outline"} className="reference-card-button" onClick={()=>onNavigate(x.key)}>{x.key==="mirror"&&mirror?"Acompanhar":x.key==="decisions"?"Continuar":"Começar"} <ArrowRight size={16}/></Button></div></article>
   })}{!filtered.length&&<div className="reference-empty">Nenhuma experiência corresponde à busca.</div>}</div>;
 }
 export default function OverviewDashboard({data,onNavigate,query=""}:{data:OverviewData;onNavigate:(v:View)=>void;query?:string}){
