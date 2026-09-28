@@ -102,7 +102,9 @@ test("fluxos públicos completos e isolamento entre visitantes", async () => {
   assert.equal((await outsider.get(`/api/app?invite=${disposableToken}`)).inviteError, true);
   const memberToken = new URL(memberInvite.link).searchParams.get("invite");
   const participant = new Visitor();
-  await participant.get(`/api/app?invite=${memberToken}`);
+  const invitationPage = await participant.get(`/api/app?invite=${memberToken}`);
+  assert.equal(invitationPage.invite.companyName, first.membership.companyName);
+  assert.equal(invitationPage.invite.role, "participant");
   const memberJoin = await participant.post("join", { token: memberToken });
   const participantData = await participant.get(`/api/app?company=${memberJoin.companyId}`);
   assert.equal(participantData.membership.role, "participant");
