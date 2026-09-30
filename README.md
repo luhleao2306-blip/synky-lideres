@@ -7,7 +7,7 @@ A página pública tem catálogo, páginas próprias das seis experiências e um
 ## Funcional nesta versão
 
 - **Espelho do Líder:** autoavaliação, ciclos sucessivos, convites vinculados a e-mail, resposta do time, mínimo de cinco respostas para comparação agregada após encerramento e ação escolhida.
-- **Decisões Sob Pressão:** três cenários jogáveis com três etapas, consequências narrativas e histórico.
+- **Decisões Sob Pressão:** seis cenários jogáveis com três etapas, consequências narrativas e histórico.
 - **Raio X da Comunicação:** respostas separadas com consentimento, comparação compartilhada, acordo prático e remoção.
 - **Mapa de Energia:** registros rápidos por atividade e dia, padrões por categoria, diário privado e compartilhamento revogável somente do resumo com líder ou RH da mesma empresa.
 - **Bússola de Carreira:** oito dilemas, prioridades e tensões para reflexão, novas tentativas e comparação com o histórico pessoal.
@@ -27,6 +27,20 @@ Em **Configurações**, visitantes podem atualizar o nome e informar um e-mail d
 - `node node_modules/typescript/bin/tsc --noEmit`
 - `npm run lint`
 - `node scripts/run-framework.mjs build`
+
+## Desenvolvimento com outra pessoa
+
+O contexto do produto, as decisões de visual e os limites conhecidos estão em [docs/CONTEXTO.md](docs/CONTEXTO.md). Para instalar uma cópia limpa, use Node.js 22.13 ou superior e execute:
+
+```sh
+npm ci
+npm run db:local:init
+npm run dev
+```
+
+A prévia local abre em `http://localhost:5173` e usa um banco D1 local, separado dos dados do site publicado. A inicialização do banco só precisa ser feita na primeira execução de uma cópia limpa.
+
+O repositório GitHub serve para revisar e compartilhar o código. Enviar commits ao GitHub não publica automaticamente o site: a implantação de produção é feita no projeto Sites indicado em `.openai/hosting.json`. Abra um pull request para cada mudança antes de incorporá-la à versão principal e mantenha credenciais e arquivos `.env*` fora do Git.
 
 ## Limites atuais
 

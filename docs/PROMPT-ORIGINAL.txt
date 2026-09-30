@@ -1,0 +1,128 @@
+Quero que você desenvolva um site completo, moderno e funcional para minha plataforma de desenvolvimento comportamental. Hoje já temos uma área para empresas de RH criarem formulários DISC e consultarem resultados. O objetivo agora é expandir o produto com experiências próprias para líderes, profissionais e equipes.
+
+Leia primeiro o projeto existente, entenda a tecnologia, a estrutura, os fluxos e o que já funciona. Aproveite o sistema DISC atual e mantenha seus dados e funcionalidades. Implemente as novidades no mesmo produto, com navegação e identidade visual coerentes. Se algum requisito depender de algo que ainda não exista no projeto, implemente a base necessária e explique a decisão no final.
+
+## Visão do produto
+
+O site deve transformar resultados de avaliações em descobertas práticas sobre liderança, comunicação, carreira e trabalho em equipe. Quero experiências envolventes, com perguntas situacionais, resultados visuais, comparações e acompanhamento de evolução. A referência de categoria é o Mr. Coach e suas ferramentas de autoconhecimento, mas quero um produto com identidade própria e experiências mais interativas. Não copie textos, perguntas, imagens, marca ou design de terceiros.
+
+O DISC existente pode servir como contexto adicional, mas os novos módulos devem fazer sentido mesmo para quem nunca respondeu ao DISC. Não apresente os resultados como diagnóstico psicológico nem como previsão garantida de desempenho.
+
+## Públicos e acessos
+
+Crie experiências adequadas para:
+
+1. **Administrador da plataforma:** gerencia empresas, usuários, módulos e configurações.
+2. **RH da empresa:** convida participantes, acompanha avaliações e acessa resultados autorizados.
+3. **Líder:** responde às próprias experiências, convida sua equipe quando aplicável e acompanha resultados aos quais tem permissão.
+4. **Participante:** responde às experiências e controla o compartilhamento dos próprios resultados conforme as regras de cada módulo.
+
+A empresa deve ter seu próprio ambiente e seus próprios dados. Um usuário de uma empresa não pode acessar dados de outra. Defina permissões no servidor, além de controlar o que aparece na interface.
+
+## Novos módulos
+
+### 1. Espelho do Líder — prioridade máxima
+
+O líder faz uma autoavaliação sobre comportamentos observáveis, como escuta, clareza, delegação, reconhecimento, abertura a opiniões e acompanhamento. Em seguida, convida integrantes da equipe para responderem sobre esses mesmos comportamentos.
+
+Entregue:
+
+* Fluxo de criação, convite, resposta e encerramento da avaliação.
+* Perguntas claras sobre situações observáveis, com opção “não tenho elementos para responder”.
+* Resultado que compara a percepção do líder com a percepção agregada da equipe.
+* Destaque para concordâncias, diferenças e pontos de desenvolvimento.
+* Sugestões de ações específicas e possibilidade de escolher uma para acompanhar.
+* Histórico para comparar ciclos realizados em datas diferentes.
+
+**Privacidade:** o líder não deve ver quem deu cada resposta nem respostas individuais. Só exiba resultados agregados quando houver um número mínimo de participantes, configurado inicialmente como cinco. Se o grupo for menor, informe que ainda não há participantes suficientes para mostrar o resultado. Trate comentários livres com cuidado para não expor a identidade de quem respondeu; se não conseguir garantir isso, não inclua comentários livres na primeira versão.
+
+### 2. Decisões Sob Pressão
+
+Crie uma experiência interativa com cenários de liderança. Exemplos: um erro importante antes de uma entrega, um conflito entre dois membros do time, uma mudança urgente de prioridades e uma conversa sobre queda de desempenho.
+
+Cada cenário deve ter etapas e escolhas com consequências narrativas. Ao final, apresente uma devolutiva sobre os comportamentos demonstrados nas escolhas, com exemplos retirados das próprias decisões do usuário. Evite rotular a pessoa com base em uma única resposta.
+
+Os cenários, alternativas e resultados devem ser estruturados como dados editáveis no projeto, e não espalhados em condicionais difíceis de manter. Entregue pelo menos três cenários completos e jogáveis, com começo, desdobramento e conclusão.
+
+### 3. Raio X da Comunicação
+
+Duas pessoas recebem um convite e respondem separadamente sobre preferências de comunicação no trabalho: pedidos, prazos, feedback, divergências e mudanças de plano.
+
+Depois que ambas concluírem, mostre um resultado compartilhado com:
+
+* Pontos em que as preferências combinam.
+* Pontos que podem gerar ruído.
+* Perguntas para a dupla conversar.
+* Um espaço para registrar acordos práticos.
+
+Cada participante deve consentir antes de compartilhar suas respostas na comparação. Permita encerrar ou remover a comparação.
+
+### 4. Mapa de Energia no Trabalho
+
+A pessoa registra, por um período curto, atividades que lhe deram energia ou a desgastaram. A experiência deve ser rápida e fácil de preencher no celular.
+
+Mostre padrões por tipo de atividade e ao longo dos dias, sem inferir condições de saúde. O resultado é pessoal por padrão. A pessoa pode escolher compartilhar apenas um resumo, nunca o diário bruto, com seu líder.
+
+### 5. Bússola de Carreira
+
+Crie uma experiência de escolhas entre dilemas profissionais concretos, como autonomia ou orientação próxima, gestão ou especialização, estabilidade ou variedade, profundidade técnica ou influência entre áreas.
+
+O resultado deve mostrar prioridades percebidas, possíveis tensões entre escolhas e perguntas para reflexão. Não atribua um “cargo ideal” nem trate escolhas como definitivas. Permita que a pessoa refaça a experiência e compare como suas prioridades mudaram.
+
+### 6. Termômetro de Liderança
+
+Após um ciclo do Espelho do Líder, permita selecionar poucos comportamentos específicos para acompanhar ao longo do tempo. Faça avaliações curtas e periódicas, com gráficos simples que mostrem a evolução da percepção agregada. Use as mesmas proteções de anonimato do Espelho do Líder.
+
+## Experiência e navegação
+
+O site deve ter:
+
+* Página inicial pública que apresente claramente o produto, seus benefícios e chamadas para começar ou entrar.
+* Área autenticada com painel diferente para participante, líder e RH.
+* Uma página própria para cada experiência, explicando duração, finalidade, quem verá o resultado e como começar.
+* Fluxos completos de convite, resposta, progresso, conclusão e resultado.
+* Área “Minha evolução” com experiências realizadas, ações escolhidas e histórico disponível.
+* Estados bem resolvidos para primeira visita, carregamento, erro, convite expirado e resultado ainda indisponível.
+* Textos reais em português do Brasil. Não use lorem ipsum nem botões sem função.
+
+Priorize o funcionamento completo dos módulos na seguinte ordem: **Espelho do Líder, Decisões Sob Pressão e Raio X da Comunicação**. Depois implemente Mapa de Energia, Bússola de Carreira e Termômetro de Liderança. Se o tempo ou o ambiente impedirem concluir tudo em uma execução, finalize os módulos prioritários de ponta a ponta e registre precisamente o que falta, sem criar páginas que finjam funcionar.
+
+## Direção visual
+
+Quero um visual **bonito, moderno, marcante e profissional**, com personalidade própria. A plataforma deve parecer um produto digital premium de desenvolvimento humano, e não um painel administrativo genérico.
+
+* Crie uma direção visual consistente: tipografia expressiva, boa hierarquia, cores bem escolhidas, ilustrações ou elementos gráficos próprios quando fizerem sentido.
+* Use cor e composição para tornar as experiências convidativas, mantendo excelente legibilidade.
+* Apresente resultados com gráficos e comparações claros, sem excesso de números ou decoração.
+* Capriche especialmente na página inicial, nas telas de início das experiências e nos resultados.
+* Use animações discretas que ajudem a perceber progresso e transições.
+* Faça o layout funcionar muito bem em celular, tablet e desktop.
+* Garanta contraste, navegação por teclado, rótulos nos campos e respeito à preferência por movimento reduzido.
+* Evite aparência de template pronto: cartões todos iguais, gradientes genéricos, emojis como ícones principais e telas vazias.
+
+Escolha e implemente uma identidade visual adequada ao produto. Apresente o conceito visual brevemente ao final, mas não interrompa o desenvolvimento para me pedir escolha de cores.
+
+## Implementação e qualidade
+
+* Trabalhe sobre o projeto existente e siga as convenções dele.
+* Use persistência real para usuários, empresas, convites, respostas, consentimentos, resultados e ciclos. Não dependa de dados fictícios para os fluxos principais.
+* Modele com cuidado as permissões e o isolamento de dados entre empresas.
+* Convites precisam ter validade, estados claros e tratamento de links inválidos.
+* Cálculos de resultados devem ser determinísticos e separados da camada visual.
+* Não exponha respostas privadas em chamadas de API, logs ou componentes de outros usuários.
+* Não coloque chaves ou segredos no código do cliente.
+* Inclua dados de demonstração apenas se estiverem claramente identificados e separados dos dados reais.
+* Verifique os principais fluxos no navegador: criação, convite, resposta, resultado e acesso com diferentes perfis.
+* Corrija erros de compilação, navegação, formulários e responsividade encontrados na verificação.
+
+## O que espero ao final
+
+Entregue o site implementado e explique objetivamente:
+
+1. Quais módulos estão completos e utilizáveis.
+2. Como acessar e testar cada perfil e fluxo.
+3. Quais decisões tomou para privacidade e compartilhamento.
+4. Quais comandos de verificação executou e o resultado.
+5. O que ainda falta, caso algum requisito não tenha sido concluído.
+
+Quero que você avance na implementação, tome decisões razoáveis e entregue uma experiência concreta e funcional. Dê atenção especial ao visual: a primeira impressão e a apresentação dos resultados são partes centrais deste projeto.
