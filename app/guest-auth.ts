@@ -18,6 +18,7 @@ export async function getAppUser(request: Request, _createVisitor = false): Prom
   } catch { return { user: null }; }
   if (!response.ok) return { user: null };
   const identity = await response.json() as { id: string; email: string; name: string };
+  if (!env.DB) return { user: null };
   const existing = await env.DB.prepare("SELECT user_id FROM members WHERE email=? ORDER BY rowid LIMIT 1")
     .bind(identity.email).first<{ user_id: string }>();
   return { user: { userId: existing?.user_id || `one:${identity.id}`, email: identity.email,
