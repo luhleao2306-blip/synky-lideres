@@ -1,26 +1,36 @@
-import { env } from "cloudflare:workers";
-import type { ChatGPTUser } from "./chatgpt-auth";
+import { getChatGPTUser, type ChatGPTUser } from "./chatgpt-auth";
 
-const COOKIE = "__Host-synky_one_access";
-const HUB = "https://synky-hub.contato146558.chatgpt.site";
+const COOKIE_NAME = "synky_visitor";
+const COOKIE_AGE = 60 * 60 * 24 * 365;
+
 export type AppUser = ChatGPTUser & { isGuest: boolean };
 
-export async function getAppUser(request: Request, _createVisitor = false): Promise<{ user: AppUser | null; cookie?: string }> {
-  const cookie = request.headers.get("cookie")?.split(";").map(part => part.trim()).find(part => part.startsWith(`${COOKIE}=`));
-  const token = cookie?.slice(COOKIE.length + 1);
-  if (!token || !/^[A-Za-z0-9._-]{100,4096}$/.test(token)) return { user: null };
-  let response: Response;
-  try {
-    response = await fetch(`${HUB}/api/grants/check`, {
-      method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-      body: JSON.stringify({ product: "lideres" }), cache: "no-store",
-    });
-  } catch { return { user: null }; }
-  if (!response.ok) return { user: null };
-  const identity = await response.json() as { id: string; email: string; name: string };
-  if (!env.DB) return { user: null };
-  const existing = await env.DB.prepare("SELECT user_id FROM members WHERE email=? ORDER BY rowid LIMIT 1")
-    .bind(identity.email).first<{ user_id: string }>();
-  return { user: { userId: existing?.user_id || `one:${identity.id}`, email: identity.email,
-    displayName: identity.name, fullName: identity.name, isGuest: false } };
+function visitorToken(request: Request): string | null {
+  const cookie = request.headers.get("cookie")?.split(";").map(part => part.trim())
+    .find(part => part.startsWith(`${COOKIE_NAME}=`))?.slice(COOKIE_NAME.length + 1);
+  return cookie && /^[0-9a-f-]{36}$/.test(cookie) ? cookie : null;
+}
+
+async function visitorId(token: string): Promise<string> {
+  const bytes = new TextEncoder().encode(token);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return `visitor:${Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("")}`;
+}
+
+export async function getAppUser(request: Request, createVisitor = false): Promise<{ user: AppUser | null; cookie?: string }> {
+  const account = await getChatGPTUser();
+  if (account) return { user: { ...account, isGuest: false } };
+
+  let token = visitorToken(request);
+  if (!token && !createVisitor) return { user: null };
+  let cookie: string | undefined;
+  if (!token) {
+    token = crypto.randomUUID();
+    cookie = `${COOKIE_NAME}=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${COOKIE_AGE}${new URL(request.url).protocol === "https:" ? "; Secure" : ""}`;
+  }
+  const userId = await visitorId(token);
+  return {
+    user: { userId, displayName: "Visitante", email: `${userId.slice(8, 24)}@visitor.synky.local`, fullName: null, isGuest: true },
+    cookie,
+  };
 }
