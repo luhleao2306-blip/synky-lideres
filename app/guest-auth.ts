@@ -2,7 +2,7 @@ import { env } from "cloudflare:workers";
 import { getChatGPTUser, type ChatGPTUser } from "./chatgpt-auth";
 
 const ONE_COOKIE = "__Host-synky_one_access";
-const ONE_HUB = "https://synky-hub.contato146558.chatgpt.site";
+const ONE_HUB = "https://one.synky.com.br";
 
 const COOKIE_NAME = "synky_visitor";
 const COOKIE_AGE = 60 * 60 * 24 * 365;

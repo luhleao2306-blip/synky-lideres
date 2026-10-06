@@ -1,8 +1,9 @@
-const HUB = "https://synky-hub.contato146558.chatgpt.site";
+const HUB = "https://one.synky.com.br";
+const HUB_ORIGINS = new Set([HUB, "https://synky-hub.contato146558.chatgpt.site"]);
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  if (request.headers.get("origin") !== HUB) return new Response("Origem inválida.", { status: 403 });
+  if (!HUB_ORIGINS.has(request.headers.get("origin") || "")) return new Response("Origem inválida.", { status: 403 });
   let token: FormDataEntryValue | null;
   try { token = (await request.formData()).get("access_token"); }
   catch { return new Response("Acesso inválido.", { status: 400 }); }
