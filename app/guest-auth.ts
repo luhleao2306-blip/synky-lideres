@@ -1,4 +1,8 @@
+import { env } from "cloudflare:workers";
 import { getChatGPTUser, type ChatGPTUser } from "./chatgpt-auth";
+
+const ONE_COOKIE = "__Host-synky_one_access";
+const ONE_HUB = "https://synky-hub.contato146558.chatgpt.site";
 
 const COOKIE_NAME = "synky_visitor";
 const COOKIE_AGE = 60 * 60 * 24 * 365;
@@ -18,6 +22,24 @@ async function visitorId(token: string): Promise<string> {
 }
 
 export async function getAppUser(request: Request, createVisitor = false): Promise<{ user: AppUser | null; cookie?: string }> {
+  const centralCookie = request.headers.get("cookie")?.split(";").map(part => part.trim())
+    .find(part => part.startsWith(`${ONE_COOKIE}=`));
+  if (centralCookie) {
+    const accessToken = centralCookie.slice(ONE_COOKIE.length + 1);
+    if (!/^[A-Za-z0-9._-]{100,4096}$/.test(accessToken) || !env.DB) return { user: null };
+    try {
+      const response = await fetch(`${ONE_HUB}/api/grants/check`, {
+        method: "POST", headers: { authorization: `Bearer ${accessToken}`, "content-type": "application/json" },
+        body: JSON.stringify({ product: "lideres" }), cache: "no-store",
+      });
+      if (!response.ok) return { user: null };
+      const identity = await response.json() as { id: string; email: string; name: string };
+      const member = await env.DB.prepare("SELECT user_id FROM members WHERE email=? ORDER BY rowid LIMIT 1")
+        .bind(identity.email).first<{ user_id: string }>();
+      return { user: { userId: member?.user_id || `one:${identity.id}`, email: identity.email,
+        displayName: identity.name, fullName: identity.name, isGuest: false } };
+    } catch { return { user: null }; }
+  }
   const account = await getChatGPTUser();
   if (account) return { user: { ...account, isGuest: false } };
 
