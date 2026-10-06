@@ -5,6 +5,7 @@ import { calculateMirrorAggregate } from "../../../lib/results";
 import { careerPriorities, energyTypes, summarizeEnergy } from "../../../lib/additional-experiences";
 import { moduleKeys, resolveModules, type ModuleKey } from "../../../lib/modules";
 import { brazilDay } from "../../../lib/calendar";
+import { isPlatformAdmin } from "../../../lib/platform-admin";
 
 type Row = Record<string, unknown>;
 const json = (body: unknown, status=200) => Response.json(body,{status});
@@ -47,7 +48,7 @@ export async function GET(request:Request) {
       m=await member(user.userId,companyId);
     }
     const memberships=await all("SELECT m.company_id AS companyId,m.role,c.name AS companyName FROM members m JOIN companies c ON c.id=m.company_id WHERE m.user_id=? ORDER BY c.name",user.userId);
-    const platformAdmin=!user.isGuest&&(user.email.toLowerCase()==="contato@somus.group"||process.env.NODE_ENV==="development");
+    const platformAdmin=isPlatformAdmin(user);
     if(!m){if(companySelection&&!invite&&memberships.length)return respond({error:"Você não tem acesso a esta empresa."},403);return respond({needsSetup:platformAdmin&&!(await one("SELECT id FROM companies LIMIT 1")),invite:invite?{type:invite.type,token,companyId:invite.company_id,companyName:invite.company_name,role:invite.role,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite,user:{name:user.displayName,email:user.email},isGuest:user.isGuest,memberships,platformAdmin})}
     const companyId=String(m.company_id),memberId=String(m.id);
     const cycles=await all("SELECT * FROM mirror_cycles WHERE company_id=? AND leader_id=? ORDER BY created_at DESC",companyId,memberId);
@@ -113,7 +114,7 @@ export async function POST(request:Request) {
     const action=safeText(p.action);
     const m=await member(user.userId,safeText(p.companyId,100)||undefined);
     if(action==="setup") {
-      if(user.email.toLowerCase()!=="contato@somus.group" && process.env.NODE_ENV!=="development") return fail("A configuração inicial está reservada ao proprietário da plataforma.",403);
+      if(!isPlatformAdmin(user)) return fail("A configuração inicial está reservada à administração da plataforma.",403);
       if(m || await one("SELECT id FROM companies LIMIT 1")) return fail("A configuração inicial já foi feita.",403);
       const name=safeText(p.company,90);if(name.length<2)return fail("Informe o nome da empresa.");
       const companyId=id(),memberId=id();
@@ -124,7 +125,7 @@ export async function POST(request:Request) {
       return json({ok:true});
     }
     if(action==="create_company") {
-      if(user.email.toLowerCase()!=="contato@somus.group"&&process.env.NODE_ENV!=="development")return fail("Apenas o proprietário da plataforma pode criar empresas.",403);
+      if(!isPlatformAdmin(user))return fail("Apenas a administração da plataforma pode criar empresas.",403);
       const name=safeText(p.name,90);if(name.length<2)return fail("Informe o nome da empresa.");
       const companyId=id();
       await db().batch([

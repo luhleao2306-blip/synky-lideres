@@ -3,6 +3,7 @@ import { getAppUser } from "../../guest-auth";
 import { communicationTopics, decisionFeedback, mirrorQuestions } from "../../../lib/experiences";
 import { calculateMirrorAggregate } from "../../../lib/results";
 import { careerPriorities, summarizeEnergy } from "../../../lib/additional-experiences";
+import { isPlatformAdmin } from "../../../lib/platform-admin";
 
 type Row = Record<string, unknown>;
 const db = () => { if (!env.DB) throw new Error("Banco de dados indisponível"); return env.DB; };
@@ -10,7 +11,6 @@ const one = async (sql: string, ...values: unknown[]) => db().prepare(sql).bind(
 const all = async (sql: string, ...values: unknown[]) => (await db().prepare(sql).bind(...values).all<Row>()).results;
 const parse = (value: unknown) => { try { return JSON.parse(String(value)); } catch { return null; } };
 const date = () => new Date().toISOString();
-const adminEmail = "contato@somus.group";
 
 export async function GET(request: Request) {
   try {
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
       headers: { "Cache-Control": "private, no-store", ...(access.cookie ? { "Set-Cookie": access.cookie } : {}) },
     });
     const url = new URL(request.url);
-    const isMaster = !user.isGuest && (user.email.toLowerCase() === adminEmail || process.env.NODE_ENV === "development");
+    const isMaster = isPlatformAdmin(user);
 
     if (url.searchParams.get("scope") === "directory") {
       if (!isMaster) return respond({ error: "Apenas o administrador master pode consultar todos os resultados." }, 403);

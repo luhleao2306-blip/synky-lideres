@@ -28,6 +28,10 @@ O código usa React, Next.js e vinext/Vite. A hospedagem Sites executa a aplica�
 
 O GitHub é o repositório de colaboração. O site publicado pertence ao projeto Sites `appgprj_6ab55eed7e1481918474765781235c05`; alterações no GitHub não entram automaticamente em produção. Preserve os dados do D1 e as regras de privacidade ao publicar uma nova versão. A versão 33 corresponde ao commit `ae9b28db9278b859310eeb4b5fc822773da8dd35` da origem Sites; commits posteriores deste repositório são voltados à colaboração até serem implantados separadamente.
 
+## Administração da plataforma
+
+A rota `/admin` é uma central restrita à administração master, autorizada no servidor pelo e-mail autenticado `contato@somus.group` ou `admin@synky.com.br`. A autenticação existente é fornecida pelo ChatGPT; não há contas locais com senha. Nunca salvar senhas de administrador no repositório. A central consulta empresas, pessoas, convites, atividades registradas e resultados por meio das rotas protegidas existentes. O progresso da academia é armazenado no navegador, e ainda não há tabela de feedback livre nem trilha de auditoria de acesso. Avaliações individuais de pares continuam sujeitas aos consentimentos e agregações já definidos.
+
 ## Limites conhecidos e verificações
 
 Os convites são compartilhados por link ou por uma mensagem preparada no aplicativo de e-mail do usuário; o envio automático ainda não está configurado. Visitantes sem login dependem do cookie do navegador para recuperar o histórico, inclusive entre dispositivos.
