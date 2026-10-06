@@ -2,7 +2,17 @@
 
 Plataforma de experiências de desenvolvimento humano em português do Brasil.
 
-A página pública tem catálogo, páginas próprias das seis experiências e uma página para empresas. Os links entre páginas usam navegação HTML nativa porque a navegação cliente do `next/link` falha no runtime vinext da hospedagem Sites. O acesso às experiências não exige login: cada visitante recebe um espaço próprio, associado a um cookie seguro do navegador.
+A página pública apresenta o produto e dá acesso à plataforma. O painel inclui uma academia para pessoas que já lideram, além das experiências e dos recursos de equipe existentes. Os links entre páginas usam navegação HTML nativa porque a navegação cliente do `next/link` falha no runtime vinext da hospedagem Sites. Visitantes recebem um espaço próprio, associado a um cookie seguro do navegador.
+
+## Academia de liderança
+
+- **8 cursos e 40 aulas:** decisões, comunicação, delegação, desenvolvimento do time, metas, confiança e conflitos, mudanças e rotina da liderança.
+- **15 práticas por curso:** 120 atividades breves de múltipla escolha, com conteúdo de estudo vinculado, nota e correção.
+- **Avaliação de cada curso:** 16 questões, nota de 0 a 10 e histórico de tentativas.
+- **Prova final:** 40 questões baseadas nas aulas, liberada após o estudo e nota mínima 7 nas avaliações atuais dos cursos.
+- Biblioteca com busca, filtro por curso e favoritos; painel de notas e exportação de registros.
+
+O progresso da academia é salvo neste navegador, separado por empresa e pessoa; ainda não é sincronizado entre dispositivos. O histórico anterior à ampliação do currículo é preservado. Os registros da implementação estão em [app/app/JORNADA.md](app/app/JORNADA.md).
 
 ## Funcional nesta versão
 
@@ -30,7 +40,14 @@ Em **Configurações**, visitantes podem atualizar o nome e informar um e-mail d
 
 ## Desenvolvimento com outra pessoa
 
-O contexto do produto, as decisões de visual e os limites conhecidos estão em [docs/CONTEXTO.md](docs/CONTEXTO.md). Para instalar uma cópia limpa, use Node.js 22.13 ou superior e execute:
+O repositório público está em [luhleao2306-blip/synky-lideres](https://github.com/luhleao2306-blip/synky-lideres). Seu colega pode baixar pelo botão **Code → Download ZIP** e extrair a pasta, ou clonar com Git:
+
+```sh
+git clone https://github.com/luhleao2306-blip/synky-lideres.git
+cd synky-lideres
+```
+
+O contexto do produto e os limites conhecidos estão em [docs/CONTEXTO.md](docs/CONTEXTO.md), e as mudanças recentes do painel em [app/app/JORNADA.md](app/app/JORNADA.md). Dentro da pasta do projeto, use Node.js 22.13 ou superior e execute:
 
 ```sh
 npm ci

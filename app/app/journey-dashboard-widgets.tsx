@@ -1,0 +1,15 @@
+"use client";
+import { useEffect, useState, type ReactNode } from "react";
+import { ChevronDown, ChevronUp, GripVertical, Maximize2, Minimize2 } from "lucide-react";
+type Widget={id:string;label:string;content:ReactNode};
+type Layout={order:string[];wide:string[]};
+export default function DashboardWidgets({widgets,preferenceKey}:{widgets:Widget[];preferenceKey:string}) {
+ const [layout,setLayout]=useState<Layout>({order:widgets.map(item=>item.id),wide:[]});
+ const [loaded,setLoaded]=useState(false),[dragged,setDragged]=useState<string|null>(null);
+ const key=preferenceKey+":dashboard-layout-v1";
+ useEffect(()=>{const timer=window.setTimeout(()=>{try{const saved=JSON.parse(localStorage.getItem(key)||"null") as Layout|null;if(saved&&Array.isArray(saved.order)&&saved.order.length===4&&new Set(saved.order).size===4&&["evolution","summary","focus","practices"].every(id=>saved.order.includes(id))&&Array.isArray(saved.wide)&&saved.wide.every(id=>saved.order.includes(id)))setLayout(saved);}catch{/* Optional preferences retain their default. */}setLoaded(true)},0);return()=>window.clearTimeout(timer)},[key]);
+ useEffect(()=>{if(loaded){try{localStorage.setItem(key,JSON.stringify(layout))}catch{/* Journey record errors are handled by the journey store. */}}},[key,loaded,layout]);
+ function move(id:string,direction:number){setLayout(value=>{const index=value.order.indexOf(id),target=index+direction;if(target<0||target>=value.order.length)return value;const order=[...value.order];[order[index],order[target]]=[order[target],order[index]];return {...value,order}})}
+ function drop(id:string){if(dragged&&dragged!==id)setLayout(value=>{const order=value.order.filter(item=>item!==dragged);order.splice(value.order.indexOf(id),0,dragged);return {...value,order}});setDragged(null)}
+ return <div className="p-widget-grid">{layout.order.map((id,index)=>{const widget=widgets.find(item=>item.id===id)!;const wide=layout.wide.includes(id);return <div key={id} className={"p-widget "+(wide?"p-wide ":"")+(dragged===id?"p-dragging":"")} onDragOver={event=>event.preventDefault()} onDrop={event=>{event.preventDefault();drop(id)}}><div className="p-widget-controls"><button disabled={index===0} aria-label={"Mover "+widget.label+" para cima"} title="Mover para cima" onClick={()=>move(id,-1)}><ChevronUp size={14}/></button><button disabled={index===layout.order.length-1} aria-label={"Mover "+widget.label+" para baixo"} title="Mover para baixo" onClick={()=>move(id,1)}><ChevronDown size={14}/></button><button aria-label={(wide?"Reduzir ":"Expandir ")+widget.label} title={wide?"Reduzir painel":"Expandir painel"} onClick={()=>setLayout(value=>({...value,wide:wide?value.wide.filter(item=>item!==id):[...value.wide,id]}))}>{wide?<Minimize2 size={14}/>:<Maximize2 size={14}/>}</button><span draggable aria-label={"Arrastar "+widget.label+" para reordenar; use os botões para mover pelo teclado"} title="Arraste para reordenar" onDragStart={event=>{event.dataTransfer.effectAllowed="move";event.dataTransfer.setData("text/plain",id);setDragged(id)}} onDragEnd={()=>setDragged(null)}><GripVertical size={14}/></span></div>{widget.content}</div>})}</div>;
+}

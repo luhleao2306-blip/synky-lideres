@@ -1,5 +1,17 @@
-export default function BrandLogo(){
-  return <svg className="brand-logo" viewBox="105 105 1830 535" role="img" aria-label="Synky Líderes by Somus Group" xmlns="http://www.w3.org/2000/svg">
-    <image href="/images/synky-logo-transparent.png" width="2084" height="754"/>
-  </svg>;
+import Image from "next/image";
+
+/** Animated Synky Leaders mark with a transparent background. */
+export default function BrandLogo({ tone = "dark", compact = false }: { tone?: "dark" | "light"; compact?: boolean }) {
+  const variant = compact ? "mark" : tone;
+  return (
+    <Image
+      className={`brand-logo brand-logo-${tone}`}
+      src={`/images/brand/synky-leaders-${variant}.webp?v=20261002-full-symbol`}
+      alt={compact ? "" : "Synky Leaders"}
+      aria-hidden={compact ? true : undefined}
+      width={compact ? 141 : 546}
+      height={compact ? 144 : 149}
+      unoptimized
+    />
+  );
 }

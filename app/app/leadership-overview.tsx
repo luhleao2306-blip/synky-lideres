@@ -1,83 +1,47 @@
 "use client";
+import { lazy, Suspense } from "react";
+import { ArrowRight, CheckCheck, Compass, MessageCircleMore, RefreshCw, ShieldCheck, Sparkles, UsersRound } from "lucide-react";
+import { ExperienceCards, type View } from "./overview-dashboard";
+import { activityEvents, type PanelData } from "./panel-data";
 
-import { ArrowRight, BarChart3, CheckCircle2, MessageCircleMore, ShieldCheck, Sparkles, Target, TrendingUp, UsersRound, type LucideIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ExperienceCards, activitySeries, type OverviewData, type View } from "./overview-dashboard";
+type Step = { title: string; detail: string; action: string; view: View; count?: number };
+const PanelInsights = lazy(() => import("./panel-insights"));
 
-type NextStep={eyebrow:string;title:string;body:string;button:string;view:View};
-type Metric={label:string;value:number;detail:string;view:View;Icon:LucideIcon};
-
-export default function LeadershipOverview({data,onNavigate,query=""}:{data:OverviewData;onNavigate:(view:View)=>void;query?:string}){
-  const hour=new Date().getHours();
-  const greeting=hour<12?"Bom dia":hour<18?"Boa tarde":"Boa noite";
-  const firstName=data.name.trim().split(" ")[0]||"líder";
-  const canLead=["admin","rh","leader"].includes(data.role);
-  const canManage=["admin","rh"].includes(data.role);
-  const latestCycle=canLead&&data.modules.mirror?data.mirrors[0]:undefined;
-  const openCycle=canLead&&data.modules.mirror?data.mirrors.find(cycle=>cycle.status==="open"):undefined;
-  const pendingCount=data.pendingInvites?.length??0;
-  const peopleCount=data.companyStats?.people??0;
-  const incoming=data.request&&((data.request.type==="mirror"&&data.modules.mirror)||(data.request.type==="communication"&&data.modules.communication))?data.request:null;
-  const waitingPair=data.modules.communication?data.pairs.find(pair=>!pair.ready&&!pair.answered):undefined;
-  const waitingInvitation=data.modules.communication&&(data.communicationInvites?.length??0)>0;
-  const next:NextStep=incoming?{
-    eyebrow:"SUA PARTICIPAÇÃO IMPORTA",title:incoming.type==="mirror"?"Seu time quer ouvir sua perspectiva.":"Uma conversa melhor começa com você.",
-    body:incoming.type==="mirror"?"Responda ao convite do Espelho. Sua percepção individual fica protegida.":"Compare preferências e encontre acordos práticos para trabalhar melhor em dupla.",
-    button:"Responder convite",view:incoming.type==="mirror"?"mirror":"communication",
-  }:waitingPair||waitingInvitation?{
-    eyebrow:"CONVERSA EM DUPLA",title:"Sua perspectiva está esperando por você.",
-    body:waitingPair?.isCreator?"Você criou uma dupla e ainda não respondeu. Registre suas preferências para avançar.":"Alguém convidou você para uma comparação. Responda no seu tempo; o resultado aparece quando ambas as pessoas terminarem.",
-    button:"Responder minha parte",view:"communication",
-  }:openCycle?{
-    eyebrow:"CICLO EM ANDAMENTO",title:openCycle.responseCount?"Ouça o time antes do próximo passo.":"Abra a escuta para o seu time.",
-    body:openCycle.responseCount?"Seu Espelho recebeu "+openCycle.responseCount+" resposta"+(openCycle.responseCount===1?"":"s")+". Acompanhe a participação e prepare a conversa de devolutiva.":"O Espelho está aberto. Convide pessoas para compartilhar perspectivas e começar a conversa.",
-    button:openCycle.responseCount?"Acompanhar ciclo":"Convidar para o Espelho",view:"mirror",
-  }:canManage&&peopleCount<=1?{
-    eyebrow:"CONSTRUA SEU TIME",title:"A liderança começa com uma conversa.",
-    body:"Convide as pessoas para o mesmo espaço e abra caminhos para escuta, colaboração e desenvolvimento.",
-    button:"Convidar meu time",view:"team",
-  }:canLead&&data.modules.mirror?{
-    eyebrow:"PRÓXIMO PASSO",title:latestCycle?"Transforme o que ouviu em ação.":"Comece ouvindo outras perspectivas.",
-    body:latestCycle?"Revise o seu ciclo, escolha um comportamento para praticar e acompanhe o que muda.":"Inicie o Espelho do Líder para entender como seu time percebe seus comportamentos.",
-    button:latestCycle?"Revisar meu ciclo":"Iniciar o Espelho",view:"mirror",
-  }:data.modules.decisions?{
-    eyebrow:"PRÓXIMO PASSO",title:"Pratique decisões com mais clareza.",
-    body:"Explore situações reais de liderança e observe as consequências de cada escolha.",
-    button:"Explorar cenários",view:"decisions",
-  }:{
-    eyebrow:"PRÓXIMO PASSO",title:"Escolha como quer evoluir hoje.",
-    body:"Encontre uma experiência curta para refletir e aplicar no seu trabalho.",
-    button:"Ver experiências",view:"experiences",
-  };
-  const series=activitySeries(data);
-  const personalMetrics:Metric[]=[
-    {label:"EXPERIÊNCIAS",value:series.total,detail:"Registros da sua jornada",view:"evolution",Icon:TrendingUp},
-    ...(data.modules.decisions?[{label:"DECISÕES",value:data.runs.length,detail:"Cenários concluídos",view:"decisions" as View,Icon:Target}]:[]),
-    ...(data.modules.communication?[{label:"CONVERSAS",value:data.pairs.length,detail:"Comparações iniciadas",view:"communication" as View,Icon:MessageCircleMore}]:[]),
-    ...(data.modules.energy?[{label:"ENERGIA",value:data.energyEntries.length,detail:"Registros realizados",view:"energy" as View,Icon:Sparkles}]:[]),
-    ...(data.modules.career?[{label:"CARREIRA",value:data.careerRuns.length,detail:"Reflexões concluídas",view:"career" as View,Icon:Target}]:[]),
+export default function LeadershipOverview({ data, onNavigate, onOpenMirror, onRefresh, updating = false, query = "" }: { data: PanelData; onNavigate: (view: View) => void; onOpenMirror: (id: string) => void; onRefresh: () => void; updating?: boolean; query?: string }) {
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+  const firstName = data.name.trim().split(" ")[0] || "líder";
+  const canLead = ["admin", "rh", "leader"].includes(data.role);
+  const canManage = ["admin", "rh"].includes(data.role);
+  const openCycles = data.modules.mirror ? data.mirrors.filter(cycle => cycle.status === "open") : [];
+  const openCycle = openCycles[0];
+  const actionCycle = data.modules.mirror ? data.mirrors.find(cycle => cycle.action) : undefined;
+  const invitedPairIds = new Set(data.communicationInvites?.map(invite => invite.reference_id));
+  const pendingPairs = data.modules.communication ? data.pairs.filter(pair => !pair.ready && !pair.answered && !invitedPairIds.has(pair.id)) : [];
+  const communicationInvites = data.modules.communication ? Math.max(data.communicationInvites?.length || 0, data.request?.type === "communication" && !pendingPairs.length ? 1 : 0) : 0;
+  const mirrorInvites = data.modules.mirror ? Math.max(data.mirrorInviteCount, data.request?.type === "mirror" ? 1 : 0) : 0;
+  const thermometerRequests = data.modules.thermometer ? data.thermometerRequestCount : 0;
+  const pendingMembers = canManage ? data.pendingInvites?.length || 0 : 0;
+  const steps: Step[] = [
+    ...(mirrorInvites ? [{ title: "Sua perspectiva faz diferença", detail: "Há convites de escuta aguardando sua participação.", action: "Responder", view: "mirror" as View, count: mirrorInvites }] : []),
+    ...(pendingPairs.length + communicationInvites ? [{ title: "Continue uma conversa em dupla", detail: "Registre suas preferências para avançar na comparação.", action: "Participar", view: "communication" as View, count: pendingPairs.length + communicationInvites }] : []),
+    ...(thermometerRequests ? [{ title: "O time quer acompanhar a prática", detail: "Responda aos comportamentos do acompanhamento.", action: "Responder", view: "thermometer" as View, count: thermometerRequests }] : []),
+    ...(openCycles.length ? [{ title: "Acompanhe os ciclos de escuta", detail: "Convide pessoas e acompanhe as respostas recebidas.", action: "Abrir ciclos", view: "mirror" as View, count: openCycles.length }] : []),
+    ...(pendingMembers ? [{ title: "Convites para o seu espaço", detail: "Consulte os links e quem ainda está aguardando aceite.", action: "Ver convites", view: "team" as View, count: pendingMembers }] : []),
   ];
-  const teamActivity:Metric=data.modules.mirror
-    ?{label:"CICLOS DO ESPELHO",value:data.companyStats?.mirrorCycles??0,detail:"Criados neste espaço",view:"mirror",Icon:Target}
-    :data.modules.decisions
-      ?{label:"DECISÕES DO TIME",value:data.companyStats?.decisionRuns??0,detail:"Cenários concluídos",view:"decisions",Icon:Target}
-      :{label:"EXPERIÊNCIAS",value:series.total,detail:"Registros da sua jornada",view:"evolution",Icon:TrendingUp};
-  const metrics:Metric[]=canManage?[
-    {label:"PESSOAS NO ESPAÇO",value:peopleCount,detail:"Acessos ativos",view:"team",Icon:UsersRound},
-    {label:"CONVITES PENDENTES",value:pendingCount,detail:"Aguardando aceite",view:"team",Icon:MessageCircleMore},
-    teamActivity,
-  ]:personalMetrics.slice(0,3);
-  const focusTitle=canManage?pendingCount>0?`${pendingCount} convite${pendingCount===1?" aguarda":"s aguardam"} resposta.`:peopleCount>1?"Seu espaço está pronto para conversas melhores.":"Dê o primeiro passo com seu time.":openCycle?"Seu ciclo de escuta está aberto.":latestCycle?"Seu Espelho tem uma história para contar.":canLead&&data.modules.mirror?"Abra um espaço para escutar seu time.":"Evolua uma escolha de cada vez.";
-  const focusBody=canManage?pendingCount>0?"Acompanhe quem já entrou e lembre o time de aceitar os convites. Depois, escolha uma experiência para conduzir juntos.":peopleCount>1?"Veja as pessoas do seu espaço e proponha uma experiência para ouvir perspectivas diferentes.":"Convide colegas para compartilhar o espaço e iniciar uma jornada de desenvolvimento em conjunto.":openCycle?openCycle.responseCount>=5?"Você já tem o mínimo de respostas. Ao encerrar o ciclo, poderá ver o resultado coletivo e escolher uma ação.":"Faltam "+(5-openCycle.responseCount)+" resposta"+(5-openCycle.responseCount===1?"":"s")+" para liberar a comparação coletiva após encerrar o ciclo.":latestCycle?"Revise seu ciclo e retome a ação escolhida para a prática.":canLead&&data.modules.mirror?"Responda primeiro sobre você. Depois convide pessoas do time para reunir perspectivas com privacidade.":"Use uma experiência curta para observar seu modo de decidir e conversar.";
-  const focusView:View=canManage?"team":canLead&&data.modules.mirror?"mirror":data.modules.decisions?"decisions":"experiences";
-  const practiceView:View=latestCycle?.action?"evolution":canLead&&data.modules.mirror?"mirror":data.modules.decisions?"decisions":"experiences";
-  const heroContext=incoming?{label:"CONVITE RECEBIDO",value:"Sua vez",detail:"Abra o convite e registre sua resposta."}:openCycle?{label:"RESPOSTAS DO TIME",value:String(openCycle.responseCount),detail:"de 5 respostas mínimas para comparar"}:canManage?{label:"PESSOAS NO ESPAÇO",value:String(peopleCount),detail:"acessos ativos neste ambiente"}:latestCycle?{label:"ÚLTIMO ESPELHO",value:String(latestCycle.responseCount),detail:"respostas recebidas no ciclo"}:null;
-  return <div className="lead-overview">
-    <header className="lead-overview-header"><div><span className="kicker">{canLead?"PAINEL DE LIDERANÇA":"SUA JORNADA"}</span><h1>{greeting}, {firstName}<span>.</span></h1><p>{canManage?"Acompanhe pessoas, convites e ciclos registrados neste espaço.":"Acesse suas experiências, resultados e ações registradas."}</p></div><div className="lead-company-tag"><UsersRound size={16}/><span>{data.company}</span></div></header>
-    <div className="lead-overview-top"><section className="lead-hero"><div className="lead-hero-copy"><span className="kicker">{next.eyebrow}</span><h2>{next.title}</h2><p>{next.body}</p><Button onClick={()=>onNavigate(next.view)}>{next.button} <ArrowRight size={17}/></Button></div>{heroContext&&<div className="lead-hero-context"><span>{heroContext.label}</span><strong>{heroContext.value}</strong><small>{heroContext.detail}</small></div>}</section><aside className="lead-practice"><span className="kicker">PARA ESTA SEMANA</span><div className="lead-practice-icon"><Sparkles size={25}/></div><h2>{latestCycle?.action?"Sua ação em prática":"Leve uma pergunta para a próxima conversa"}</h2><p>{latestCycle?.action||"Pergunte a alguém do time: “O que eu poderia fazer para facilitar seu trabalho?”"}</p><button onClick={()=>onNavigate(practiceView)}>{latestCycle?.action?"Rever minha ação":canLead&&data.modules.mirror?"Abrir o Espelho":"Explorar experiência"} <ArrowRight size={16}/></button></aside></div>
-    <nav className="lead-metrics" aria-label="Acessos rápidos e indicadores">{metrics.map(({label,value,detail,view,Icon})=><button key={label} onClick={()=>onNavigate(view)}><span className="lead-metric-icon"><Icon size={19}/></span><span className="lead-metric-copy"><small>{label}</small><strong>{value}</strong><span>{detail}</span></span><ArrowRight size={16} className="lead-metric-arrow"/></button>)}</nav>
-    <section className="lead-focus"><div className="lead-focus-icon">{canManage?<UsersRound size={24}/>:openCycle?<BarChart3 size={24}/>:<ShieldCheck size={24}/>}</div><div className="lead-focus-copy"><span className="kicker">{canManage?"PESSOAS E CONVITES":openCycle?"ESPELHO DO LÍDER · EM ANDAMENTO":"LIDERANÇA NA PRÁTICA"}</span><h2>{focusTitle}</h2><p>{focusBody}</p>{openCycle&&!canManage&&<div className="lead-cycle-progress" aria-label={Math.min(openCycle.responseCount,5)+" de 5 respostas mínimas"}><span style={{width:Math.min(100,openCycle.responseCount/5*100)+"%"}}/></div>}</div><button onClick={()=>onNavigate(focusView)}>{canManage?"Ver meu time":openCycle?"Acompanhar ciclo":latestCycle?"Abrir meu Espelho":"Dar o próximo passo"} <ArrowRight size={16}/></button></section>
-    <section className="lead-experiences"><div className="lead-section-heading"><div><span className="kicker">EXPLORE NO SEU RITMO</span><h2>{canLead?"Experiências para liderar melhor":"Experiências para evoluir"}</h2></div><button onClick={()=>onNavigate("experiences")}>Ver todas <ArrowRight size={16}/></button></div><ExperienceCards data={data} onNavigate={onNavigate} query={query} limit={3}/></section>
-    <div className="lead-privacy-note"><CheckCircle2 size={17}/><span>Resultados individuais continuam protegidos. No Espelho, a comparação do time aparece apenas após cinco respostas e o encerramento do ciclo.</span></div>
+  const next: Step = steps[0] || (actionCycle ? { title: "Dê continuidade à ação que escolheu.", detail: actionCycle.action!, action: "Registrar minha prática", view: "mirror" } : canLead && data.modules.mirror ? { title: "Uma boa liderança começa pela escuta.", detail: "Olhe para seus comportamentos e convide o time a compartilhar outras perspectivas.", action: "Iniciar meu ciclo de escuta", view: "mirror" } : data.modules.decisions ? { title: "Abra espaço para uma escolha consciente.", detail: "Pratique uma situação de trabalho e observe as consequências de cada caminho.", action: "Praticar uma decisão", view: "decisions" } : { title: "Encontre seu próximo passo.", detail: "Escolha uma atividade que faça sentido para o momento que você vive.", action: "Explorar experiências", view: "experiences" });
+  const total = activityEvents(data).length;
+  const practiceCount = data.modules.mirror ? data.mirrors.reduce((sum, cycle) => sum + cycle.checkinCount, 0) : 0;
+  const metrics = [
+    ...(canManage && data.companyStats ? [{ label: "Pessoas no espaço", value: data.companyStats.people, detail: "Acessos ativos", view: "team" as View, Icon: UsersRound }] : [{ label: "Registros disponíveis", value: total, detail: "Seu histórico pessoal", view: "evolution" as View, Icon: Compass }]),
+    { label: "Práticas registradas", value: practiceCount, detail: "Ações após o Espelho", view: data.modules.mirror ? "mirror" as View : "evolution" as View, Icon: CheckCheck },
+    { label: "Pendências para você", value: mirrorInvites + pendingPairs.length + communicationInvites + thermometerRequests, detail: "Convites e participações", view: steps.find(step => ["mirror", "communication", "thermometer"].includes(step.view))?.view || "experiences" as View, Icon: MessageCircleMore },
+  ];
+  return <div className="leader-home">
+    <header className="panel-welcome"><div><span className="panel-eyebrow"><i/>{greeting}, {firstName}</span><h1>Sua liderança,<br/><em>em movimento.</em></h1><p>Um espaço para escutar, agir e acompanhar o que você coloca em prática.</p></div><div className="panel-welcome-meta"><span>{new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}</span><button onClick={onRefresh} disabled={updating} aria-label="Atualizar dados do painel"><RefreshCw size={15} className={updating ? "panel-spinning" : ""}/>{updating ? "Atualizando…" : "Atualizar dados"}</button></div></header>
+    <div className="panel-launch-grid"><section className="panel-focus"><div className="panel-focus-top"><span className="panel-eyebrow">SEU PRÓXIMO MOVIMENTO</span><span className="panel-focus-symbol"><Compass size={25}/></span></div><h2>{next.title}</h2><p>{next.detail}</p><button className="panel-bright-button" onClick={() => actionCycle && !steps.length ? onOpenMirror(actionCycle.id) : next.view === "mirror" && openCycle && !mirrorInvites ? onOpenMirror(openCycle.id) : onNavigate(next.view)}>{next.action}<span><ArrowRight size={19}/></span></button><div className="panel-focus-foot"><span><ShieldCheck size={14}/>No seu ritmo. Com contexto.</span>{openCycle && <span>{openCycle.responseCount} respostas no ciclo aberto</span>}</div></section><nav className="panel-metric-stack" aria-label="Indicadores e atalhos">{metrics.map(({ label, value, detail, view, Icon }) => <button key={label} onClick={() => onNavigate(view)}><span className="panel-metric-icon"><Icon size={21}/></span><span className="panel-metric-copy"><small>{label}</small><strong>{value}</strong><span>{detail}</span></span><ArrowRight size={17}/></button>)}</nav></div>
+    <div className="panel-middle-grid"><Suspense fallback={<section className="panel-insights panel-chart-empty" role="status">Preparando seus indicadores…</section>}><PanelInsights data={data} onNavigate={onNavigate} onOpenMirror={onOpenMirror}/></Suspense><aside className="panel-next"><div className="panel-section-label"><span className="panel-eyebrow">DA REFLEXÃO À AÇÃO</span><Sparkles size={18}/></div><h2>Cuide do próximo passo.</h2>{steps.length ? <div className="panel-step-list">{steps.map(step => <button key={step.title} onClick={() => onNavigate(step.view)}><span className="panel-step-count">{step.count}</span><span><strong>{step.title}</strong><small>{step.detail}</small><b>{step.action} <ArrowRight size={14}/></b></span></button>)}</div> : <div className="panel-clear"><CheckCheck size={25}/><h3>Sem participações pendentes.</h3><p>Quando houver um convite ou ciclo aberto, seu próximo passo aparecerá aqui.</p></div>}<div className="panel-current-action"><span className="panel-eyebrow">{actionCycle ? "SUA AÇÃO ESCOLHIDA" : "UM ESPAÇO PARA PRATICAR"}</span><h3>{actionCycle ? "Leve a escuta para o trabalho." : "Pequenas ações também contam."}</h3><p>{actionCycle?.action || "Escolha uma situação, reflita sobre o que aconteceu e retome seus registros quando precisar."}</p><button className="panel-text-link" onClick={() => actionCycle ? onOpenMirror(actionCycle.id) : onNavigate("experiences")}>{actionCycle ? "Registrar prática" : "Escolher uma atividade"}<ArrowRight size={16}/></button></div></aside></div>
+    <section className="panel-explore"><div className="panel-explore-heading"><div><span className="panel-eyebrow">FERRAMENTAS PARA SUA LIDERANÇA</span><h2>Comece pelo que faz sentido hoje.</h2></div><button className="panel-text-link" onClick={() => onNavigate("experiences")}>Todas as experiências<ArrowRight size={17}/></button></div><ExperienceCards data={data} onNavigate={onNavigate} query={query} limit={3}/></section>
+    <footer className="panel-home-foot"><ShieldCheck size={16}/><p>O Espelho e o Termômetro mostram percepções agregadas apenas com cinco respostas válidas e o encerramento do ciclo ou rodada. A comparação em dupla exige consentimento de ambas as pessoas.</p></footer>
   </div>;
 }
