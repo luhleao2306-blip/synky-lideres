@@ -21,7 +21,7 @@ export default function TeamPanel({company,role,memberId,people,invites,busy,sen
   const [createdInvite,setCreatedInvite]=useState<{email:string;role:string;link:string}|null>(null);
   const canManage=role==="admin"||role==="rh";
   const hasOthers=people.some(person=>person.id!==memberId);
-  useEffect(()=>{if(createdInvite)document.getElementById("team-created-link")?.scrollIntoView({behavior:"smooth",block:"center"})},[createdInvite]);
+  useEffect(()=>{if(createdInvite)document.getElementById("team-created-link")?.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"})},[createdInvite]);
 
   async function createInvite(event:FormEvent<HTMLFormElement>){
     event.preventDefault();

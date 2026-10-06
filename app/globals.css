@@ -570,7 +570,7 @@
 /* Brand and public previews use the real product flow and experience imagery. */
 .brand-logo,.app-sidebar .brand-logo{filter:none}
 .app-sidebar .brand{background:transparent;border-radius:0}
-.app-sidebar .brand-logo{filter:brightness(0) invert(1)}
+.app-sidebar .brand-logo{filter:none}
 .landing-process{height:auto;min-height:340px;padding:21px 20px;transform:none}
 .landing-process h3{font-size:24px;line-height:1.1;margin:12px 0 20px}
 .landing-process ol{list-style:none;margin:0;padding:0;display:grid;gap:14px}

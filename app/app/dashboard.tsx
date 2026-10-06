@@ -1,7 +1,8 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import BrandLogo from "@/components/brand-logo";
-import { ArrowRight, ArrowLeft, ChevronRight, CircleHelp, Compass, Copy, LayoutDashboard, Plus, Search, Settings2, TrendingUp, UsersRound, ChartNoAxesCombined } from "lucide-react";
+import "./panel.css";
+import { ArrowRight, ArrowLeft, ChevronRight, CircleHelp, Copy, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,7 +10,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { decisionFeedback, mirrorActions, mirrorLabels, mirrorQuestions, scenarios } from "@/lib/experiences";
 import { mirrorHighlights } from "@/lib/results";
 import { ExperienceCards } from "./overview-dashboard";
-import LeadershipOverview from "./leadership-overview";
+import LeaderAcademy from "./academy-workspace";
+import type { PanelView } from "./journey-model";
 import { CareerExperience, EnergyExperience, ThermometerExperience, type CareerRun, type EnergyEntry, type EnergyShare, type EnergySummary, type SharedEnergy, type ThermometerRequest, type ThermometerTrack } from "./additional-experiences";
 import TeamPanel from "./team-panel";
 import InvitationLanding from "./invitation-landing";
@@ -23,10 +25,9 @@ import { brazilDay } from "@/lib/calendar";
 
 type Cycle={id:string;status:string;createdAt:string;selfScores:number[];responseCount:number;teamScores:(number|null)[]|null;action:string|null;checkins:{id:string;action:string;note:string;entryDate:string;createdAt:string}[];checkinCount:number};
 type Data={needsSetup?:boolean;inviteError?:boolean;isGuest?:boolean;user:{name:string;email:string};membership?:{id:string;role:string;companyId:string;companyName:string;kind?:string};memberships?:{companyId:string;companyName:string;role:string}[];platformAdmin?:boolean;platformCompanies?:{id:string;name:string;people:number}[];moduleSettings?:ModuleSettings;invite?:{type:string;token:string;companyId?:string;companyName?:string;role?:string;referenceId?:string};mirrors?:Cycle[];mirrorRequests?:{token:string;reference_id:string}[];runs?:{id:string;scenario_id:string;choices:number[];created_at:string}[];decisionCount?:number;pairs?:CommunicationPair[];pendingCommunication?:CommunicationInvite[];communicationCandidates?:CommunicationCandidate[];energyEntries?:EnergyEntry[];energySummary?:EnergySummary;energyShares?:EnergyShare[];sharedEnergy?:SharedEnergy[];careerRuns?:CareerRun[];thermometerTracks?:ThermometerTrack[];thermometerRequests?:ThermometerRequest[];people?:{id:string;name:string;email:string;role:string}[];pendingInvites?:{token:string;email:string;type:string;role:string;expiresAt:string;createdAt:string}[];companyStats?:{people:number;mirrorCycles:number;decisionRuns:number;careerRuns:number;thermometerTracks:number}|null};
-type View="overview"|"experiences"|"mirror"|"decisions"|"communication"|"energy"|"career"|"thermometer"|"evolution"|"results"|"team"|"settings"|"platform";
-const labels:Record<View,string>={overview:"Visão geral",experiences:"Experiências",mirror:"Espelho do Líder",decisions:"Decisões Sob Pressão",communication:"Raio X da Comunicação",energy:"Mapa de Energia",career:"Bússola de Carreira",thermometer:"Termômetro de Liderança",evolution:"Minha evolução",results:"Resultados",team:"Meu time",settings:"Configurações",platform:"Empresas"};
+type View = PanelView;
+const labels:Record<View,string>={overview:"Minha jornada",courses:"Minha trilha",classroom:"Aula",activities:"Atividades",assessments:"Prova final",grades:"Meu desempenho",library:"Biblioteca",starting:"Meu ponto de partida",diagnosis:"Diagnóstico de desenvolvimento",plan:"Plano de prática",exercises:"Exercícios e reflexões",journal:"Diário de prática",review:"Revisão de progresso",experiences:"Experiências",mirror:"Espelho do Líder",decisions:"Decisões Sob Pressão",communication:"Raio X da Comunicação",energy:"Mapa de Energia",career:"Bússola de Carreira",thermometer:"Termômetro de Liderança",evolution:"Minha evolução",results:"Resultados",team:"Meu time",settings:"Configurações",platform:"Empresas"};
 const viewFromUrl=():View=>{if(typeof window==="undefined")return "overview";const value=new URLSearchParams(window.location.search).get("view");return value&&value in labels?value as View:"overview"};
-const menu:[View,typeof LayoutDashboard][]=[["overview",LayoutDashboard],["experiences",Compass],["team",UsersRound],["evolution",TrendingUp],["results",ChartNoAxesCombined],["settings",Settings2]];
 const date=(s:string)=>new Date(s).toLocaleDateString("pt-BR",{day:"2-digit",month:"short",year:"numeric"});
 const roleName:Record<string,string>={admin:"Administrador",rh:"RH",leader:"Líder",participant:"Participante"};
 
@@ -41,7 +42,9 @@ function ActionPractice({cycle,send,busy}:{cycle:Cycle;send:(action:string,paylo
 }
 export default function Dashboard(){
   const [data,setData]=useState<Data|null>(null),[error,setError]=useState(""),[notice,setNotice]=useState(""),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
-  const [searchOpen,setSearchOpen]=useState(false),[searchQuery,setSearchQuery]=useState("");
+  const [refreshing,setRefreshing]=useState(false);
+  const dataRequest=useRef<AbortController|null>(null);
+  const [searchQuery,setSearchQuery]=useState("");
   const [view,setView]=useState<View>(viewFromUrl),[company,setCompany]=useState(""),[inviteEmail,setInviteEmail]=useState(""),[link,setLink]=useState(""),[linkEmail,setLinkEmail]=useState("");
   const [mirrorScores,setMirrorScores]=useState<(number|null)[]>(Array(6).fill(0)),[responseScores,setResponseScores]=useState<(number|null)[]>(Array(6).fill(0)),[activeCycle,setActiveCycle]=useState(""),[startingCycle,setStartingCycle]=useState(false);
   const [scenarioId,setScenarioId]=useState(""),[step,setStep]=useState(0),[choices,setChoices]=useState<number[]>([]),[feedback,setFeedback]=useState<ReturnType<typeof decisionFeedback>>(null);
@@ -69,14 +72,31 @@ export default function Dashboard(){
     },{signal:controller.signal})).catch(()=>{});
     return ()=>controller.abort();
   },[]);
-  const refresh=useCallback(async()=>{try{const params=new URLSearchParams();if(inviteToken)params.set("invite",inviteToken);else if(selectedCompanyId)params.set("company",selectedCompanyId);const r=await fetch("/api/app"+(params.size?"?"+params:""),{cache:"no-store"});const j=await r.json() as Data & {error?:string};if(!r.ok)throw new Error(j.error||"Não foi possível carregar.");setError("");setData(j)}catch(e){setError(e instanceof Error?e.message:"Não foi possível carregar.")}finally{setLoading(false)}},[inviteToken,selectedCompanyId]);
-  useEffect(()=>{const timer=window.setTimeout(()=>{void refresh()},0);return ()=>window.clearTimeout(timer)},[refresh]);
+  const refresh=useCallback(async()=>{
+    dataRequest.current?.abort();
+    const controller=new AbortController();
+    dataRequest.current=controller;
+    setRefreshing(true);
+    try{
+      const params=new URLSearchParams();
+      if(inviteToken)params.set("invite",inviteToken);else if(selectedCompanyId)params.set("company",selectedCompanyId);
+      const r=await fetch("/api/app"+(params.size?"?"+params:""),{cache:"no-store",signal:controller.signal});
+      const j=await r.json() as Data & {error?:string};
+      if(!r.ok)throw new Error(j.error||"Não foi possível carregar.");
+      if(!controller.signal.aborted){setError("");setData(j)}
+    }catch(e){
+      if(!controller.signal.aborted)setError(e instanceof Error?e.message:"Não foi possível carregar.");
+    }finally{
+      if(dataRequest.current===controller&&!controller.signal.aborted){setLoading(false);setRefreshing(false)}
+    }
+  },[inviteToken,selectedCompanyId]);
+  useEffect(()=>{const timer=window.setTimeout(()=>{void refresh()},0);return ()=>{window.clearTimeout(timer);dataRequest.current?.abort()}},[refresh]);
   const communicationCompanyId=data?.membership?.companyId;
   useEffect(()=>{if(view!=="communication"||!communicationCompanyId)return;const timer=window.setInterval(()=>{if(document.visibilityState==="visible"&&!busy)void refresh()},15000);return ()=>window.clearInterval(timer)},[view,communicationCompanyId,busy,refresh]);
   useEffect(()=>{const update=()=>{setView(viewFromUrl());setSelectedCompanyId(new URLSearchParams(window.location.search).get("company")||"")};window.addEventListener("popstate",update);return ()=>window.removeEventListener("popstate",update)},[]);
   async function send(action:string,payload:Record<string,unknown>={}):Promise<{feedback?:ReturnType<typeof decisionFeedback>;link?:string;companyId?:string;type?:string;id?:string}|null>{setBusy(true);setError("");setNotice("");try{const r=await fetch("/api/app",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action,companyId:data?.membership?.companyId||selectedCompanyId,...payload})});const j=await r.json() as {error?:string;feedback?:ReturnType<typeof decisionFeedback>;link?:string;companyId?:string;type?:string;id?:string};if(!r.ok)throw new Error(j.error||"Tente novamente.");if(j.link&&action!=="invite_member"){setLink(j.link);setLinkEmail(typeof payload.email==="string"?payload.email:"")}else if(action==="respond_communication"){setLink("");setLinkEmail("")}if(action!=="invite_member")setNotice("Pronto! Suas alterações foram salvas.");if(action!=="join"&&action!=="create_company")await refresh();return j}catch(e){setError(e instanceof Error?e.message:"Tente novamente.");return null}finally{setBusy(false)}}
-  function selectCompany(id:string){const url=new URL(window.location.href);url.searchParams.delete("invite");url.searchParams.delete("view");url.searchParams.set("company",id);window.history.pushState(null,"",url.pathname+url.search);setData(null);setLoading(true);setSelectedCompanyId(id);setView("overview");setNotice("");setLink("");setLinkEmail("");setError("");window.scrollTo({top:0,behavior:"smooth"})}
-  function navigate(v:View){setView(v);setError("");setNotice("");setFeedback(null);setSelectedRequest(null);const url=new URL(window.location.href);if(v==="overview")url.searchParams.delete("view");else url.searchParams.set("view",v);window.history.pushState(null,"",url.pathname+url.search);window.scrollTo({top:0,behavior:"smooth"})}
+  function selectCompany(id:string){const url=new URL(window.location.href);url.searchParams.delete("invite");url.searchParams.delete("view");url.searchParams.set("company",id);window.history.pushState(null,"",url.pathname+url.search);setData(null);setLoading(true);setSelectedCompanyId(id);setView("overview");setNotice("");setLink("");setLinkEmail("");setError("");window.scrollTo({top:0,behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}
+  function navigate(v:View){setView(v);setError("");setNotice("");setFeedback(null);setSelectedRequest(null);const url=new URL(window.location.href);if(v==="overview")url.searchParams.delete("view");else url.searchParams.set("view",v);window.history.pushState(null,"",url.pathname+url.search);window.scrollTo({top:0,behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}
   const cycle=data?.mirrors?.find(c=>c.id===activeCycle)||data?.mirrors?.[0];
   const request=selectedRequest||((data?.invite?.type==="mirror"||data?.invite?.type==="communication")?{type:data.invite.type,token:data.invite.token}:null);
   const canLead=["admin","rh","leader"].includes(data?.membership?.role||"");
@@ -86,8 +106,8 @@ export default function Dashboard(){
   if(!data)return <main className="app-loading"><p>{error}</p><Button onClick={refresh}>Tentar novamente</Button></main>;
   if(!data.membership&&data.invite)return <InvitationLanding invite={data.invite} isGuest={!!data.isGuest} busy={busy} error={error} onAccept={async()=>{const result=await send("join",{token:data.invite?.token});if(result?.companyId){selectCompany(result.companyId);if(result.type==="mirror"||result.type==="communication"){navigate(result.type);setSelectedRequest({type:result.type,token:data.invite!.token})}}}}/>;
   if(!data.membership)return <main className="sign-in"><div className="sign-in-card"><a href="/" className="brand"><BrandLogo/></a>{data.invite?<><span className="kicker">CONVITE RECEBIDO</span><h1>Você foi convidado para participar.</h1><p>Aceite para acessar o ambiente compartilhado. Guarde este link: qualquer pessoa que o receba pode tentar utilizá-lo.</p><Button className="app-primary" disabled={busy} onClick={async()=>{const result=await send("join",{token:data.invite?.token});if(result?.companyId){selectCompany(result.companyId);if(result.type==="mirror"||result.type==="communication"){navigate(result.type);setSelectedRequest({type:result.type,token:data.invite!.token})}}}}>Aceitar convite <ArrowRight size={16}/></Button></>:data.inviteError?<><h1>Este convite não está disponível.</h1><p>Ele pode ter expirado, já ter sido usado ou pertencer a outro e-mail. Peça um novo link à pessoa que convidou você.</p></>:data.needsSetup?<><span className="kicker">PRIMEIROS PASSOS</span><h1>Crie o espaço da sua empresa.</h1><p>Você será o administrador inicial e poderá convidar outras pessoas.</p><label className="field-label">Nome da empresa<Input value={company} onChange={e=>setCompany(e.target.value)} placeholder="Ex.: Aurora Tecnologia"/></label><Button className="app-primary" disabled={busy||company.trim().length<2} onClick={()=>send("setup",{company})}>Criar espaço <ArrowRight size={16}/></Button></>:<><h1>Você ainda não tem acesso.</h1><p>Peça um convite ao RH ou ao administrador da sua empresa.</p></>}{error&&<p className="error-message" role="alert">{error}</p>}</div></main>;
-  return <div className="app-shell"><aside className="app-sidebar"><a href="/" className="brand"><BrandLogo/></a><nav aria-label="Área da plataforma">{(data.platformAdmin?[...menu,["platform",UsersRound] as [View,typeof LayoutDashboard]]:menu).map(([key,Icon])=><button key={key} className={view===key?"active":""} onClick={()=>navigate(key)}><Icon size={18}/>{labels[key]}</button>)}</nav><div className="app-sidebar-foot"><span>ESPAÇO ATUAL</span><strong>{data.membership.companyName}</strong><small>{roleName[data.membership.role]}</small></div></aside><div className="app-main"><header className="app-header"><div className="mobile-brand"><a href="/" className="brand"><BrandLogo/></a></div><div className="app-header-title">{labels[view]}</div><div className="app-header-actions">{(data.memberships?.length||0)>1&&<select className="company-selector" aria-label="Selecionar empresa" value={data.membership.companyId} onChange={e=>selectCompany(e.target.value)}>{data.memberships?.map(item=><option key={item.companyId} value={item.companyId}>{item.companyName}</option>)}</select>}{searchOpen&&<Input aria-label="Buscar experiências" autoFocus value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} placeholder="Buscar experiências..."/>}<button aria-label={searchOpen?"Fechar busca":"Buscar experiências"} onClick={()=>{if(searchOpen){setSearchOpen(false);setSearchQuery("")}else{setSearchOpen(true);navigate("experiences")}}}><Search size={20}/></button></div><div className="user-info"><span className="avatar">{data.user.name.charAt(0).toUpperCase()}</span><span><b>{data.user.name.split(" ")[0]}</b><small>{data.isGuest?"Acesso público":roleName[data.membership.role]} · {data.membership.companyName}</small></span></div></header><nav className="mobile-nav" aria-label="Navegação móvel">{(data.platformAdmin?[...menu,["platform",UsersRound] as [View,typeof LayoutDashboard]]:menu).map(([key,Icon])=><button key={key} className={view===key?"active":""} onClick={()=>navigate(key)}><Icon size={18}/><span>{key==="overview"?"Início":key==="experiences"?"Experiências":key==="evolution"?"Evolução":key==="results"?"Resultados":key==="settings"?"Ajustes":key==="platform"?"Empresas":"Time"}</span></button>)}</nav><main className="app-content">{error&&<div className="alert error-message" role="alert">{error}</div>}{data.inviteError&&<div className="alert error-message" role="alert">Convite inválido ou expirado. Peça um novo link.</div>}{notice&&<div className="alert success-message" role="status">{notice}</div>}
-    {view==="overview"&&<LeadershipOverview data={{name:data.user.name,role:data.membership.role,company:data.membership.companyName,personal:data.membership.kind==="personal",mirrors:data.mirrors||[],runs:data.runs||[],pairs:data.pairs||[],energyEntries:data.energyEntries||[],careerRuns:data.careerRuns||[],thermometerTracks:data.thermometerTracks||[],companyStats:data.companyStats,pendingInvites:data.pendingInvites||[],communicationInvites:data.pendingCommunication||[],modules,request}} onNavigate={navigate} query={searchQuery}/>}
+  return <LeaderAcademy key={data.membership.companyId+":"+data.membership.id} name={data.user.name} memberId={data.membership.id} companyId={data.membership.companyId} companyName={data.membership.companyName} role={data.membership.role} isGuest={!!data.isGuest} memberships={data.memberships||[]} platformAdmin={!!data.platformAdmin} view={view} navigate={navigate} selectCompany={selectCompany} refreshing={refreshing} busy={busy} refresh={refresh} systemError={error||(data.inviteError?"Convite inválido ou expirado. Peça um novo link.":"")} systemNotice={notice}>
+    {view==="experiences"&&<label className="j-field"><span>Buscar nas experiências existentes</span><Input value={searchQuery} onChange={event=>setSearchQuery(event.target.value)} placeholder="Nome da experiência…"/></label>}
     {view==="experiences"&&<><div className="module-heading"><span className="kicker">PRÁTICAS DE LIDERANÇA</span><h1>Escolha seu próximo passo<span>.</span></h1><p>Atividades para entender padrões, praticar escolhas e melhorar conversas no trabalho.</p></div><ExperienceCards data={{name:data.user.name,role:data.membership.role,company:data.membership.companyName,personal:data.membership.kind==="personal",mirrors:data.mirrors||[],runs:data.runs||[],pairs:data.pairs||[],energyEntries:data.energyEntries||[],careerRuns:data.careerRuns||[],thermometerTracks:data.thermometerTracks||[],companyStats:data.companyStats,modules,request}} onNavigate={navigate} query={searchQuery}/></>}
     {disabledModule&&<div className="module-panel"><h2>Experiência indisponível</h2><p>Esta experiência não está ativa para {data.membership.companyName}. Peça ao administrador para disponibilizá-la.</p><Button variant="outline" onClick={()=>navigate("experiences")}>Ver experiências</Button></div>}{view==="mirror"&&modules.mirror&&<><div className="module-heading experience-intro mirror-intro"><span className="kicker">EXPERIÊNCIA 01 · 8 MIN</span><h1>Espelho do Líder<span>.</span></h1><p>Compare sua autoavaliação com a percepção coletiva de pelo menos cinco pessoas do time. Ninguém verá quem respondeu o quê.</p></div>
       {request?.type==="mirror"&&<div className="module-panel"><span className="kicker">CONVITE DO TIME</span><h2>Conte o que você observa.</h2><p>Avalie cada comportamento. Se não tiver elementos, escolha essa opção. Suas respostas são anônimas no resultado do líder.</p><Questions values={responseScores} onChange={setResponseScores} allowUnknown/><Button className="app-primary" disabled={busy||responseScores.some(v=>v===0)} onClick={async()=>{const result=await send("respond_mirror",{token:request.token,scores:responseScores});if(result){setSelectedRequest(null);window.history.replaceState(null,"","/app");navigate("overview")}}}>Enviar respostas <ArrowRight size={16}/></Button></div>}
@@ -108,7 +128,7 @@ Acesse seu convite no Synky Líderes:
 ${link}
 
 Até breve!`)}`}>Preparar e-mail <ArrowRight size={15}/></a>}<Button variant="ghost" onClick={()=>setLink("")}>Fechar</Button></div>}
-  </main></div></div>;
+  </LeaderAcademy>;
 }
 
 

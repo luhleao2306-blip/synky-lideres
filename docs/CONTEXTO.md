@@ -18,6 +18,10 @@ O acesso às experiências é público. Cada visitante recebe um ambiente pessoa
 
 A capa tem fundo claro, título à esquerda, uma imagem de conversa de equipe e um cartão do Espelho do Líder sobre a foto. Abaixo dela, a versão 33 traz as seis experiências em uma seleção visual, duas demonstrações interativas e uma chamada para empresas. As respostas dadas nas demonstrações não são gravadas.
 
+## Atualização para colaboração — 6 de outubro de 2026
+
+A descrição visual acima registra a versão 33 original. A cópia atual inclui as alterações posteriores da landing page, a marca animada Synky Leaders com transparência e a academia no painel em `/app`. A academia tem oito cursos, quarenta aulas, quinze práticas por curso, avaliações de dezesseis questões e prova final de quarenta questões. Consulte `app/app/JORNADA.md` para a evolução do painel e `README.md` para instalar uma cópia local. O progresso de estudos permanece no navegador, isolado por empresa e pessoa; os demais recursos continuam usando as integrações existentes. O envio desta versão ao GitHub compartilha o código para colaboração e não publica uma nova versão do site hospedado.
+
 ## Arquitetura e implantação
 
 O código usa React, Next.js e vinext/Vite. A hospedagem Sites executa a aplicação em Cloudflare Workers com banco D1. As páginas ficam em `app/`, os componentes em `components/`, o conteúdo das experiências em `lib/`, o esquema do banco em `db/` e as migrações em `drizzle/`. As rotas principais da API são `app/api/app/route.ts` e `app/api/results/route.ts`.
