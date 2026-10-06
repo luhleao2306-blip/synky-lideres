@@ -33,6 +33,8 @@
 .academy-shell .ac-menu-label{display:block;font-size:9px;letter-spacing:1.5px;color:#596e61;font-weight:700;margin:9px 12px}
 .academy-shell .ac-account-menu button{display:flex;align-items:center;justify-content:space-between;gap:15px;width:100%;font-size:12px;text-align:left;padding:11px 12px;background:none;border:0;border-radius:8px;color:#335842}
 .academy-shell .ac-account-menu button:hover,.academy-shell .ac-account-menu button[aria-current=page]{background:#e8f1eb;color:#155d3d}
+.academy-shell .ac-account-menu a{display:flex;align-items:center;gap:10px;width:100%;font-size:12px;text-align:left;text-decoration:none;padding:11px 12px;background:none;border:0;border-radius:8px;color:#335842}
+.academy-shell .ac-account-menu a:hover{background:#e8f1eb;color:#155d3d}
 .academy-shell .ac-mobile-trigger{display:none}
 .academy-shell .ac-navigation{border-top:1px solid #eef3ef;display:flex;gap:15px;align-items:center;max-width:1400px;padding:0 44px;margin:auto}
 .academy-shell .ac-navigation>div{display:flex;gap:20px;align-items:stretch}
