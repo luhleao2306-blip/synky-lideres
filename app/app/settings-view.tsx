@@ -46,7 +46,7 @@ export default function SettingsView({ name, email, company, role, isGuest, isAd
             <label className="field-label">E-mail de contato<div className="company-name-form"><Input type="email" value={contactEmail} maxLength={254} onChange={event=>setContactEmail(event.target.value)} placeholder="seu@email.com"/><Button disabled={busy||!contactEmail.includes("@")||contactEmail.trim().toLowerCase()===email.toLowerCase()} onClick={()=>send("set_contact_email",{email:contactEmail})}>Salvar e-mail</Button></div></label>
             <small>O e-mail identifica você nos convites e permite receber resumos compartilhados. Ele não é verificado automaticamente.</small>
           </div>}
-          <a className="settings-signout" href={isGuest?"/signin-with-chatgpt?return_to=%2Fapp":"/signout-with-chatgpt?return_to=/"} target="_top">{isGuest?"Acesso administrativo":"Sair da conta"} <ArrowRight size={16}/></a>
+          <a className="settings-signout" href={isGuest?"/login":"/"} onClick={async event=>{if(!isGuest){event.preventDefault();await fetch("/api/auth/logout",{method:"POST"});window.location.assign("/")}}}>{isGuest?"Acesso administrativo":"Sair da conta"} <ArrowRight size={16}/></a>
         </section>
         {isAdmin && <CompanySettings name={company} modules={modules} busy={busy} send={send}/>}
       </div>

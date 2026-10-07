@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { getChatGPTUser, type ChatGPTUser } from "./chatgpt-auth";
+import { identityFromCookie } from "@/lib/cloudflare-auth";
 
 const ONE_COOKIE = "__Host-synky_one_access";
 const ONE_HUB = "https://one.synky.com.br";
@@ -22,6 +23,8 @@ async function visitorId(token: string): Promise<string> {
 }
 
 export async function getAppUser(request: Request, createVisitor = false): Promise<{ user: AppUser | null; cookie?: string }> {
+  const session = await identityFromCookie(request.headers.get("cookie"));
+  if (session) return { user: session };
   const centralCookie = request.headers.get("cookie")?.split(";").map(part => part.trim())
     .find(part => part.startsWith(`${ONE_COOKIE}=`));
   if (centralCookie) {

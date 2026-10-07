@@ -25,7 +25,7 @@ function query(name: string) { return typeof window === "undefined" ? "" : new U
 function downloadFile(text: string, name: string, type: string) { const url = URL.createObjectURL(new Blob([text], { type })); const anchor = document.createElement("a"); anchor.href = url; anchor.download = name; document.body.appendChild(anchor); anchor.click(); anchor.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 1000); }
 
 export default function LeaderAcademy(props: ComponentProps<typeof JourneyWorkspace>) {
-  const store = useAcademyProgress(studyStorageKey(props.companyId, props.memberId));
+  const store = useAcademyProgress(studyStorageKey(props.companyId, props.memberId), props.companyId);
   const { progress } = store;
   const [lessonId, setLessonId] = useState(() => query("lesson")), [quizId, setQuizId] = useState(() => query("quiz"));
   const [mobile, setMobile] = useState(false), [message, setMessage] = useState("");

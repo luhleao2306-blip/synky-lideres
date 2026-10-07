@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 import { getAppUser } from "../../guest-auth";
 import { isPlatformAdmin } from "@/lib/platform-admin";
+import { ensureAuthSchema, expireIso, hashToken, newOpaqueToken, normalizeEmail, sameOrigin, validEmail } from "@/lib/cloudflare-auth";
 
 type Row = Record<string, unknown>;
 const all = async (sql: string, ...values: unknown[]) => (await env.DB!.prepare(sql).bind(...values).all<Row>()).results;
@@ -14,6 +15,7 @@ export async function GET(request: Request) {
   if (!env.DB) return Response.json({ error: "Banco de dados indisponível." }, { status: 503, headers });
 
   try {
+    await ensureAuthSchema();
     const url = new URL(request.url);
     const q = (url.searchParams.get("q") || "").trim().slice(0, 80);
     const offset = Math.min(100000, Math.max(0, Number.parseInt(url.searchParams.get("offset") || "0", 10) || 0));
@@ -35,9 +37,42 @@ export async function GET(request: Request) {
       ) ORDER BY eventAt DESC LIMIT 30`),
     ]);
     const total = Number((await one(`SELECT COUNT(*) AS total FROM members m JOIN companies c ON c.id=m.company_id ${filter}`))?.total || 0);
-    return Response.json({ totals, companies, clients, events, total, offset, pageSize: 30, generatedAt: new Date().toISOString(), capabilities: { feedback: "O sistema gera devolutivas a partir das escolhas nas experiências; não armazena feedback livre enviado por clientes.", courses: "O progresso da academia é salvo no navegador de cada pessoa e não está disponível no banco central.", logs: "Não há trilha de auditoria ou logs de acesso persistidos nesta versão." } }, { headers });
+    const [registrationInvites, authEvents, learningProgress] = await Promise.all([
+      all("SELECT email,company_name AS companyName,created_at AS createdAt,expires_at AS expiresAt,used_at AS usedAt FROM synky_registration_invites ORDER BY created_at DESC LIMIT 50"),
+      all("SELECT event_type AS eventType,email,created_at AS eventAt FROM synky_auth_events ORDER BY created_at DESC LIMIT 100"),
+      all("SELECT m.name,m.email,c.name AS companyName,p.studied_lessons AS studiedLessons,p.total_lessons AS totalLessons,p.final_grade AS finalGrade,p.course_progress AS courseProgress,p.updated_at AS updatedAt FROM synky_academy_progress p JOIN members m ON m.id=p.member_id JOIN companies c ON c.id=p.company_id ORDER BY p.updated_at DESC LIMIT 200"),
+    ]);
+    return Response.json({ totals, companies, clients, events, registrationInvites, authEvents, learningProgress, total, offset, pageSize: 30, generatedAt: new Date().toISOString(), capabilities: { feedback: "O sistema gera devolutivas a partir das escolhas nas experiências; não armazena feedback livre enviado por clientes.", courses: "O painel sincroniza marcos de conclusão e notas reportados pelo progresso de estudos de cada conta. Respostas individuais de atividades não são expostas aqui.", logs: "A trilha inclui eventos de entrada, falhas, convites e cadastros." } }, { headers });
   } catch (error) {
     console.error("admin dashboard failed", error);
     return Response.json({ error: "Não foi possível carregar os dados administrativos." }, { status: 500, headers });
+  }
+}
+
+export async function POST(request: Request) {
+  const access = await getAppUser(request, false);
+  const user = access.user;
+  const headers = { "Cache-Control": "private, no-store", ...(access.cookie ? { "Set-Cookie": access.cookie } : {}) };
+  if (!isPlatformAdmin(user)) return Response.json({ error: "Acesso restrito à administração da plataforma." }, { status: user ? 403 : 401, headers });
+  if (!env.DB) return Response.json({ error: "Banco de dados indisponível." }, { status: 503, headers });
+  if (!sameOrigin(request)) return Response.json({ error: "Solicitação inválida." }, { status: 403, headers });
+  try {
+    await ensureAuthSchema();
+    const input = await request.json() as { email?: unknown; companyName?: unknown };
+    const email = normalizeEmail(input.email);
+    const companyName = typeof input.companyName === "string" ? input.companyName.trim().slice(0, 120) : "";
+    if (!validEmail(email) || companyName.length < 2) return Response.json({ error: "Informe um e-mail válido e o nome da empresa." }, { status: 400, headers });
+    const existing = await env.DB.prepare("SELECT id FROM synky_auth_users WHERE email=? LIMIT 1").bind(email).first<{ id: string }>();
+    if (existing) return Response.json({ error: "Este e-mail já possui uma conta." }, { status: 409, headers });
+    const token = newOpaqueToken();
+    const now = new Date().toISOString();
+    const expiresAt = expireIso(7 * 24 * 60);
+    await env.DB.prepare("INSERT INTO synky_registration_invites(token_hash,email,company_name,created_by,created_at,expires_at) VALUES(?,?,?,?,?,?)")
+      .bind(await hashToken(token), email, companyName, user?.email ?? "", now, expiresAt).run();
+    await env.DB.prepare("INSERT INTO synky_auth_events(id,event_type,email,created_at) VALUES(?,?,?,?)").bind(crypto.randomUUID(), "Convite de cadastro criado", email, now).run();
+    return Response.json({ ok: true, invite: { email, companyName, expiresAt, url: `${new URL(request.url).origin}/cadastro?token=${encodeURIComponent(token)}` } }, { status: 201, headers });
+  } catch (error) {
+    console.error("admin invitation creation failed", error);
+    return Response.json({ error: "Não foi possível gerar o convite." }, { status: 500, headers });
   }
 }

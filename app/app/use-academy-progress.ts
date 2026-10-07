@@ -2,8 +2,10 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { JourneyStorageContext } from "./use-journey-store";
 import { emptyStudyProgress, parseStudyProgress, type StudyProgress } from "./academy-model";
+import { allStudyLessons, FINAL_QUIZ_ID, studyCourses } from "./academy-curriculum";
+import { courseStudied, latestCurrentStudyAttempt } from "./academy-model";
 
-export default function useAcademyProgress(key: string) {
+export default function useAcademyProgress(key: string, companyId: string) {
   const override = useContext(JourneyStorageContext);
   const [progress, setProgress] = useState<StudyProgress>(emptyStudyProgress);
   const [loading, setLoading] = useState(true);
@@ -20,6 +22,15 @@ export default function useAcademyProgress(key: string) {
     finally { setLoading(false); }
   }, [key, override]);
   useEffect(() => { const timer = window.setTimeout(load, 0); const changed = (event: StorageEvent) => { if (!override && event.key === key && event.storageArea === window.localStorage) { if (dirty.current) { ready.current = false; setBlocked(true); setError("Outra aba alterou o progresso enquanto havia registros não salvos aqui. Exporte esta aba antes de carregar a versão salva."); } else load(); } }; const warn = (event: BeforeUnloadEvent) => { if (dirty.current) { event.preventDefault(); event.returnValue = ""; } }; window.addEventListener("storage", changed); window.addEventListener("beforeunload", warn); return () => { window.clearTimeout(timer); ready.current = false; window.removeEventListener("storage", changed); window.removeEventListener("beforeunload", warn); }; }, [load, key, override]);
+  useEffect(() => {
+    if (loading || blocked || !ready.current || override) return;
+    const timer = window.setTimeout(() => {
+      const courseProgress = studyCourses.map(course => ({ courseId: course.id, complete: courseStudied(progress, course.id), grade: latestCurrentStudyAttempt(progress, course.id)?.grade ?? null, attempts: progress.attempts.filter(attempt => attempt.quizId === course.id).length }));
+      const finalGrade = [...progress.attempts].reverse().find(attempt => attempt.quizId === FINAL_QUIZ_ID)?.grade ?? null;
+      void fetch("/api/academy/progress", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ companyId, studiedLessons: progress.studied.length, totalLessons: allStudyLessons.length, courseProgress, finalGrade }) }).catch(() => undefined);
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [companyId, loading, blocked, override, progress]);
   const update = useCallback((change: (value: StudyProgress) => StudyProgress) => {
     if (!ready.current) return false;
     let base = current.current;

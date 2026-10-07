@@ -14,7 +14,7 @@ const date = () => new Date().toISOString();
 
 export async function GET(request: Request) {
   try {
-    const access = await getAppUser(request, true);
+    const access = await getAppUser(request, false);
     const user = access.user;
     if (!user) return Response.json({ error: "Acesso não disponível." }, { status: 401 });
     const respond = (body: unknown, status = 200) => Response.json(body, {

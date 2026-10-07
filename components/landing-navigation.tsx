@@ -10,12 +10,12 @@ const menu: NavItem[] = [
   { label: "Plataforma", children: [
     { label: "Conheça a Synky", href: "#produto" },
     { label: "Perguntas frequentes", href: "#duvidas" }, { label: "Privacidade dos resultados", href: "#privacidade" },
-    { label: "Acessar plataforma", href: "/app" },
+    { label: "Acessar plataforma", href: "/login?next=%2Fapp" },
   ] },
   { label: "Equipes", children: [
     { label: "Para líderes e equipes", href: "#equipes" }, { label: "Ambiente para empresas", href: "/empresas" },
   ] },
-  { label: "Começar", children: [{ label: "Conheça a plataforma", href: "#produto" }, { label: "Para líderes e equipes", href: "#equipes" }, { label: "Tirar dúvidas", href: "#duvidas" }, { label: "Acessar plataforma", href: "/app" }] },
+  { label: "Começar", children: [{ label: "Conheça a plataforma", href: "#produto" }, { label: "Para líderes e equipes", href: "#equipes" }, { label: "Tirar dúvidas", href: "#duvidas" }, { label: "Acessar plataforma", href: "/login?next=%2Fapp" }] },
 ];
 const flatten = (items: NavItem[]): NavItem[] => items.flatMap(item => item.children ? flatten(item.children) : [item]);
 
@@ -79,7 +79,7 @@ export default function LandingNavigation() {
       <a className="landing-brand" href="#inicio" aria-label="Synky Líderes, início"><BrandLogo tone="light"/></a>
       <nav className="landing-desktop-nav" aria-label="Navegação principal"><NavBranch key={reset} items={menu} onNavigate={close} active={active} reset={reset}/></nav>
       <a className="landing-header-preview" href="#produto">Sobre a Synky</a>
-      <a className="landing-header-cta" href="/app">Acessar plataforma <span><ArrowRight size={19}/></span></a>
+      <a className="landing-header-cta" href="/login?next=%2Fapp">Acessar plataforma <span><ArrowRight size={19}/></span></a>
       <button ref={toggle} className={`landing-menu-toggle ${open ? "is-open" : ""}`} aria-label={open ? "Fechar menu" : "Abrir menu"} aria-expanded={open} aria-controls="landing-mobile-navigation" onClick={() => { setOpen(!open); setQuery(""); }}><span/><span/><span/></button>
     </div>
     <div className={`landing-menu-overlay ${open ? "is-open" : ""}`} onClick={close}/>
@@ -87,7 +87,7 @@ export default function LandingNavigation() {
       <div className="landing-mobile-brand"><a href="#inicio" onClick={close} aria-label="Synky Líderes, início"><BrandLogo/></a><button aria-label="Fechar menu" onClick={close}><X size={22}/></button></div>
       <label className="landing-menu-search"><input type="search" placeholder="Buscar na navegação…" aria-label="Buscar na navegação" value={query} onChange={event => setQuery(event.target.value)}/><Search size={19}/></label>
       <nav aria-label="Navegação móvel">{query ? <ul className="landing-nav-list landing-search-results">{searchResults.map(item => <li key={item.href}><a href={item.href} onClick={close}>{item.label}<ArrowRight size={14}/></a></li>)}{!searchResults.length && <li>Nenhum destino encontrado.</li>}</ul> : <NavBranch key={reset} items={menu} onNavigate={close} active={active} reset={reset}/>}</nav>
-      <div className="landing-mobile-info"><strong>Para quem já lidera.</strong><p>Atividades práticas para refletir sobre decisões, comunicação e relações de equipe.</p><a href="/app" onClick={close}>Acessar plataforma <ArrowRight size={16}/></a></div>
+      <div className="landing-mobile-info"><strong>Para quem já lidera.</strong><p>Atividades práticas para refletir sobre decisões, comunicação e relações de equipe.</p><a href="/login?next=%2Fapp" onClick={close}>Acessar plataforma <ArrowRight size={16}/></a></div>
     </div>
   </header>;
 }

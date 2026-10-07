@@ -31,7 +31,7 @@ function publicCycle(row:Row,count:number,teamScores:number[][],checkins:Row[],c
 }
 export async function GET(request:Request) {
   try {
-    const access=await getAppUser(request,true),user=access.user;
+    const access=await getAppUser(request,false),user=access.user;
     if(!user)return fail("Não foi possível iniciar sua visita.",401);
     const respond=(body:unknown,status=200)=>Response.json(body,{status,headers:access.cookie?{"Set-Cookie":access.cookie}:{}});
     const url=new URL(request.url);

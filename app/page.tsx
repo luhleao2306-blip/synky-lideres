@@ -16,7 +16,7 @@ export default function Home() {
         <div className="landing-hero-copy">
           <span className="landing-kicker"><i/> Para quem já lidera</span>
           <LandingHeading as="h1" id="landing-title">Lidere com mais<br/>{" "}escuta e intenção<br/>{" "}nos desafios do<br/>{" "}dia a dia.</LandingHeading>
-          <div className="landing-hero-actions"><a className="landing-button landing-button-bright" href="/app">Acessar plataforma <span><ArrowUpRight size={16}/></span></a><a className="landing-play-link" href="#produto"><span><ArrowDownRight size={17}/></span> Conheça a Synky</a></div>
+          <div className="landing-hero-actions"><a className="landing-button landing-button-bright" href="/login?next=%2Fapp">Acessar plataforma <span><ArrowUpRight size={16}/></span></a><a className="landing-play-link" href="#produto"><span><ArrowDownRight size={17}/></span> Conheça a Synky</a></div>
         </div>
         <div className="landing-hero-image"><img src="/images/landing-leader-v2.webp" alt="Retrato ilustrativo de uma líder com um tablet" fetchPriority="high"/></div>
         <div className="landing-hero-social"><span>PARA QUEM JÁ LIDERA</span><i/>LIDERANÇA<i/>EQUIPE<i/>PRÁTICA</div>
@@ -26,7 +26,7 @@ export default function Home() {
 
     <section className="landing-intro" id="produto" aria-labelledby="landing-intro-title">
       <div className="landing-intro-title"><span className="landing-kicker"><i/> SYNKY LÍDERES</span><LandingHeading id="landing-intro-title">Para a liderança<br/>{" "}<em>que você já exerce.</em></LandingHeading><p>A plataforma organiza atividades breves para transformar situações do trabalho em reflexão e próximos passos.</p>
-        <div className="landing-intro-footer"><div className="landing-intro-dashboard"><span>SUA ROTINA DE LIDERANÇA</span><strong>Um espaço para<br/> olhar a prática.</strong><div className="landing-dashboard-tags"><i>INDIVIDUAL</i><i>EM DUPLA</i><i>EM EQUIPE</i></div><a href="/app">Acessar plataforma <ArrowRight size={15}/></a></div><div className="landing-intro-formats"><p>Individual, em dupla<br/> e com sua equipe.</p><a className="landing-underlink" href="/app">Conheça a plataforma <ArrowUpRight size={16}/></a></div></div>
+        <div className="landing-intro-footer"><div className="landing-intro-dashboard"><span>SUA ROTINA DE LIDERANÇA</span><strong>Um espaço para<br/> olhar a prática.</strong><div className="landing-dashboard-tags"><i>INDIVIDUAL</i><i>EM DUPLA</i><i>EM EQUIPE</i></div><a href="/login?next=%2Fapp">Acessar plataforma <ArrowRight size={15}/></a></div><div className="landing-intro-formats"><p>Individual, em dupla<br/> e com sua equipe.</p><a className="landing-underlink" href="/login?next=%2Fapp">Conheça a plataforma <ArrowUpRight size={16}/></a></div></div>
       </div>
       <div className="landing-intro-visual"><img src="/images/landing/intro-workshop.webp" alt="Colegas trabalham juntos em uma sala de equipe" loading="lazy"/></div>
     </section>
@@ -41,7 +41,7 @@ export default function Home() {
 
     <section className="landing-trust" id="privacidade" aria-labelledby="landing-trust-title"><div className="landing-trust-heading"><span className="landing-kicker"><i/> RESULTADOS COM CONTEXTO</span><LandingHeading id="landing-trust-title">Cada resultado tem<br/>{" "}<em>seu jeito de compartilhar.</em></LandingHeading><p>Veja alguns cuidados previstos nos fluxos do produto.</p></div><LandingPrivacyCarousel/></section>
 
-    <section className="landing-cta"><div className="landing-cta-mark"><BrandLogo compact tone="light"/></div><div><span className="landing-kicker"><i/> SYNKY LÍDERES</span><LandingHeading>Desenvolva a liderança<br/>{" "}que você já exerce.</LandingHeading><p>Conheça a Synky e veja como ela apoia sua liderança.</p></div><a className="landing-button landing-button-bright" href="/app">Acessar plataforma <span><ArrowRight size={16}/></span></a></section>
+    <section className="landing-cta"><div className="landing-cta-mark"><BrandLogo compact tone="light"/></div><div><span className="landing-kicker"><i/> SYNKY LÍDERES</span><LandingHeading>Desenvolva a liderança<br/>{" "}que você já exerce.</LandingHeading><p>Conheça a Synky e veja como ela apoia sua liderança.</p></div><a className="landing-button landing-button-bright" href="/login?next=%2Fapp">Acessar plataforma <span><ArrowRight size={16}/></span></a></section>
     <PublicFooter />
   </div>;
 }

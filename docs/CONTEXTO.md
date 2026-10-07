@@ -12,7 +12,7 @@ A apresentação precisa ser marcante e profissional para quem considera comprar
 
 Há seis experiências: Espelho do Líder, Decisões Sob Pressão, Raio X da Comunicação, Mapa de Energia, Bússola de Carreira e Termômetro de Liderança. O produto tem formulários, resultados e histórico, além de empresas, membros, convites, perfis de acesso, área de time e painel de evolução. A área de Resultados permite consultar o próprio histórico; a administração master pode localizar pessoas em todos os espaços.
 
-O acesso às experiências é público. Cada visitante recebe um ambiente pessoal associado ao navegador. A administração central permanece protegida. O servidor aplica permissões por empresa e por perfil. Espelho do Líder e Termômetro só mostram médias do time depois do encerramento e de pelo menos cinco respostas válidas. A comparação do Raio X da Comunicação exige que as duas pessoas concluam e autorizem o compartilhamento.
+O painel agora exige uma conta autenticada. Clientes entram por links de cadastro individuais, criados pela administração e válidos por sete dias; não há cadastro público nem envio automático do convite por e-mail. O servidor aplica permissões por empresa e por perfil. Espelho do Líder e Termômetro só mostram médias do time depois do encerramento e de pelo menos cinco respostas válidas. A comparação do Raio X da Comunicação exige que as duas pessoas concluam e autorizem o compartilhamento.
 
 ## Estado visual da página inicial
 
@@ -26,15 +26,15 @@ A descrição visual acima registra a versão 33 original. A cópia atual inclui
 
 O código usa React, Next.js e vinext/Vite. A hospedagem Sites executa a aplicação em Cloudflare Workers com banco D1. As páginas ficam em `app/`, os componentes em `components/`, o conteúdo das experiências em `lib/`, o esquema do banco em `db/` e as migrações em `drizzle/`. As rotas principais da API são `app/api/app/route.ts` e `app/api/results/route.ts`.
 
-O GitHub é o repositório de colaboração. O site publicado pertence ao projeto Sites `appgprj_6ab55eed7e1481918474765781235c05`; alterações no GitHub não entram automaticamente em produção. Preserve os dados do D1 e as regras de privacidade ao publicar uma nova versão. A versão 33 corresponde ao commit `ae9b28db9278b859310eeb4b5fc822773da8dd35` da origem Sites; commits posteriores deste repositório são voltados à colaboração até serem implantados separadamente.
+O GitHub é o repositório de colaboração. O site publicado pertence ao projeto Sites `appgprj_6ab55eed7e1481918474765781235c05`; alterações no GitHub não entram automaticamente em produção. Preserve os dados do D1 e as regras de privacidade ao publicar uma nova versão. A versão 33 corresponde ao commit `ae9b28db9278b859310eeb4b5fc822773da8dd35` da origem Sites; commits posteriores deste repositório são voltados à colaboração até serem implantados separadamente. O subdomínio `leaders.synky.com.br` está associado a esse projeto Cloudflare Sites.
 
 ## Administração da plataforma
 
-A rota `/admin` é uma central restrita à administração master, autorizada no servidor pelo e-mail autenticado `contato@somus.group` ou `admin@synky.com.br`. A autenticação existente é fornecida pelo ChatGPT; não há contas locais com senha. Nunca salvar senhas de administrador no repositório. A central consulta empresas, pessoas, convites, atividades registradas e resultados por meio das rotas protegidas existentes. O progresso da academia é armazenado no navegador, e ainda não há tabela de feedback livre nem trilha de auditoria de acesso. Avaliações individuais de pares continuam sujeitas aos consentimentos e agregações já definidos.
+A rota `/admin` é uma central restrita à administração master, autorizada no servidor pelo e-mail autenticado `contato@somus.group` ou `admin@synky.com.br`. O acesso do projeto usa Cloudflare Workers e o D1 já associado ao Site; não depende de projeto Supabase. Contas locais usam hash PBKDF2 e sessões opacas em cookie HTTP-only. A senha inicial de `admin@synky.com.br` é fornecida como segredo temporário de execução e deve ser removida depois que a conta for criada no primeiro login. A central consulta empresas, pessoas, convites, eventos de acesso e atividades. A academia continua mantendo os detalhes das respostas no navegador, e envia ao D1 somente marcos de aulas e notas para consulta administrativa. Não há tabela de feedback livre. Avaliações individuais de pares continuam sujeitas aos consentimentos e agregações já definidos.
 
 ## Limites conhecidos e verificações
 
-Os convites são compartilhados por link ou por uma mensagem preparada no aplicativo de e-mail do usuário; o envio automático ainda não está configurado. Visitantes sem login dependem do cookie do navegador para recuperar o histórico, inclusive entre dispositivos.
+Os convites de cadastro são compartilhados manualmente pelo administrador. O progresso detalhado da academia continua no navegador da pessoa; apenas o resumo de estudos e notas é sincronizado à conta no D1. Uma troca de navegador pode não recuperar respostas e rascunhos que ainda só existam localmente.
 
 Em uma instalação limpa em 30 de setembro de 2026, os seis testes de cálculo de resultados e a compilação passaram. O lint encontrou duas ocorrências de `react-hooks/set-state-in-effect` em `app/app/results-panel.tsx` e quatro avisos de uso de `<img>` em páginas públicas. O comando `npm run db:local:init` prepara o D1 local; sem essa etapa a API responde com erro de tabela ausente.
 
