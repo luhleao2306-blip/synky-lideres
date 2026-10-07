@@ -30,7 +30,7 @@ O GitHub é o repositório de colaboração. O site publicado pertence ao projet
 
 ## Administração da plataforma
 
-A rota `/admin` é uma central restrita à administração master, autorizada no servidor pelo e-mail autenticado `contato@somus.group` ou `admin@synky.com.br`. O acesso do projeto usa Cloudflare Workers e o D1 já associado ao Site; não depende de projeto Supabase. Contas locais usam hash PBKDF2 e sessões opacas em cookie HTTP-only. A senha inicial de `admin@synky.com.br` é fornecida como segredo temporário de execução e deve ser removida depois que a conta for criada no primeiro login. A central consulta empresas, pessoas, convites, eventos de acesso e atividades. A academia continua mantendo os detalhes das respostas no navegador, e envia ao D1 somente marcos de aulas e notas para consulta administrativa. Não há tabela de feedback livre. Avaliações individuais de pares continuam sujeitas aos consentimentos e agregações já definidos.
+A rota `/admin` é uma central restrita à administração master, autorizada no servidor pelas contas administrativas inicialmente associadas a `contato@somus.group` ou `admin@synky.com.br`. Para contas locais, a permissão fica vinculada ao ID autenticado em `synky_auth_admins` e permanece após troca de e-mail; identidades externas mantêm o fluxo de autorização existente. O acesso do projeto usa Cloudflare Workers e o D1 já associado ao Site; não depende de projeto Supabase. Contas locais usam hash PBKDF2 e sessões opacas em cookie HTTP-only. A senha inicial de `admin@synky.com.br` é fornecida como segredo temporário de execução e deve ser removida depois que a conta for criada no primeiro login. A central consulta empresas, pessoas, convites, eventos de acesso e atividades. A academia continua mantendo os detalhes das respostas no navegador, e envia ao D1 somente marcos de aulas e notas para consulta administrativa. Não há tabela de feedback livre. Avaliações individuais de pares continuam sujeitas aos consentimentos e agregações já definidos.
 
 ## Limites conhecidos e verificações
 
@@ -39,3 +39,14 @@ Os convites de cadastro são compartilhados manualmente pelo administrador. O pr
 Em uma instalação limpa em 30 de setembro de 2026, os seis testes de cálculo de resultados e a compilação passaram. O lint encontrou duas ocorrências de `react-hooks/set-state-in-effect` em `app/app/results-panel.tsx` e quatro avisos de uso de `<img>` em páginas públicas. O comando `npm run db:local:init` prepara o D1 local; sem essa etapa a API responde com erro de tabela ausente.
 
 O prompt inicial completo está em [PROMPT-ORIGINAL.txt](PROMPT-ORIGINAL.txt). Suas partes sobre integração com DISC foram substituídas pela decisão posterior descrita acima.
+
+
+## Perfil da conta — 7 de outubro de 2026
+
+Os itens Minha conta e espaço, Pessoas e convites e Empresas foram retirados do menu do aluno. Meu perfil abre a página própria de foto, e-mail e senha. Links antigos de equipe e empresas no painel levam ao perfil; a administração master continua acessível somente aos perfis autorizados. O site público não foi modificado.
+
+O perfil usa /api/profile e /api/profile/photo, com identidade derivada da sessão autenticada e proteção de origem nas alterações. Fotos PNG/JPEG/WebP são preparadas no navegador em 512x512, com prévia e gravação explícita; o servidor limita o arquivo a 350 KB e verifica assinatura e formato. A foto fica no D1 em synky_profile_photos, servida somente para o próprio usuário autenticado, sem cache público, e aparece no cabeçalho após atualizar os dados.
+
+E-mail e senha exigem confirmação da senha atual e proteção contra repetidas tentativas. Senhas usam o hash existente; alterações acontecem em transação com rotação da sessão e encerramento das demais sessões. Trocar e-mail atualiza os membros pertencentes ao mesmo ID, preservando notas, cursos e papéis, e rejeita endereços em uso e endereços administrativos reservados. Eventos de alteração não incluem senhas ou tokens. A permissão administrativa local é preservada por ID para evitar mudança de acesso ao editar o e-mail. O cadastro continua exclusivo por convite, sem criação de contas pelo perfil. E-mail novo não recebe verificação automática por mensagem.
+
+Contas sem credenciais locais podem editar foto; e-mail e senha permanecem sob responsabilidade do provedor de login, com indicação explícita na tela. As duas tabelas auxiliares são aditivas e inicializadas pelo mecanismo existente de ensureAuthSchema. Checagem de tipos integral e lint dos novos arquivos aprovados; compilação de produção no fluxo de publicação. Nenhuma conta real teve foto, e-mail ou senha alterados para conferência.

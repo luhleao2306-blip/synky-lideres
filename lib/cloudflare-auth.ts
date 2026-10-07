@@ -12,6 +12,7 @@ export type SynkyIdentity = {
   displayName: string;
   fullName: string;
   isGuest: false;
+  platformAdmin: boolean;
 };
 
 const schema = [
@@ -32,6 +33,18 @@ const schema = [
     created_at TEXT NOT NULL
   )`,
   `CREATE INDEX IF NOT EXISTS idx_synky_auth_sessions_user ON synky_auth_sessions(user_id)`,
+  `CREATE TABLE IF NOT EXISTS synky_auth_admins (
+    user_id TEXT PRIMARY KEY REFERENCES synky_auth_users(id) ON DELETE CASCADE,
+    original_email TEXT NOT NULL UNIQUE COLLATE NOCASE
+  )`,
+  `INSERT OR IGNORE INTO synky_auth_admins(user_id,original_email)
+    SELECT id,email FROM synky_auth_users WHERE email IN ('admin@synky.com.br','contato@somus.group')`,
+  `CREATE TABLE IF NOT EXISTS synky_profile_photos (
+    user_id TEXT PRIMARY KEY,
+    photo BLOB NOT NULL,
+    mime_type TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
   `CREATE TABLE IF NOT EXISTS synky_registration_invites (
     token_hash TEXT PRIMARY KEY,
     email TEXT NOT NULL COLLATE NOCASE,
@@ -158,18 +171,19 @@ export function sessionToken(cookieHeader: string | null): string | null {
   return /^[A-Za-z0-9_-]{40,80}$/.test(token) ? token : null;
 }
 
-type UserRow = { id: string; email: string; name: string; disabled_at: string | null };
+type UserRow = { id: string; email: string; name: string; disabled_at: string | null; platform_admin: number };
 
 export async function identityFromCookie(cookieHeader: string | null, db: D1Database = requiredDb()): Promise<SynkyIdentity | null> {
   const token = sessionToken(cookieHeader);
   if (!token) return null;
   try {
     await ensureAuthSchema(db);
-    const row = await db.prepare(`SELECT u.id,u.email,u.name,u.disabled_at
+    const row = await db.prepare(`SELECT u.id,u.email,u.name,u.disabled_at,CASE WHEN a.user_id IS NULL THEN 0 ELSE 1 END AS platform_admin
       FROM synky_auth_sessions s JOIN synky_auth_users u ON u.id=s.user_id
+      LEFT JOIN synky_auth_admins a ON a.user_id=u.id
       WHERE s.token_hash=? AND s.expires_at>? LIMIT 1`).bind(await hashToken(token), new Date().toISOString()).first<UserRow>();
     if (!row || row.disabled_at) return null;
-    return { userId: row.id, email: row.email, displayName: row.name, fullName: row.name, isGuest: false };
+    return { userId: row.id, email: row.email, displayName: row.name, fullName: row.name, isGuest: false, platformAdmin: !!row.platform_admin };
   } catch {
     return null;
   }
@@ -190,8 +204,11 @@ export async function seedBootstrapAdmin(db: D1Database = requiredDb()): Promise
   const email = "admin@synky.com.br";
   let stage = "lookup";
   try {
-    const existing = await db.prepare("SELECT id FROM synky_auth_users WHERE email=? LIMIT 1").bind(email).first<{ id: string }>();
-    if (existing) return;
+    const existing = await db.prepare("SELECT id FROM synky_auth_users WHERE email=? UNION ALL SELECT user_id AS id FROM synky_auth_admins WHERE original_email=? LIMIT 1").bind(email, email).first<{ id: string }>();
+    if (existing) {
+      await db.prepare("INSERT OR IGNORE INTO synky_auth_admins(user_id,original_email) VALUES(?,?)").bind(existing.id,email).run();
+      return;
+    }
     stage = "password-hash";
     const { salt, hash } = await createPasswordHash(password);
     const now = new Date().toISOString();
@@ -199,6 +216,7 @@ export async function seedBootstrapAdmin(db: D1Database = requiredDb()): Promise
     stage = "create-account";
     await db.prepare(`INSERT INTO synky_auth_users(id,email,name,password_salt,password_hash,created_at,updated_at)
       VALUES(?,?,?,?,?,?,?)`).bind(userId, email, "Administrador Synky", salt, hash, now, now).run();
+    await db.prepare("INSERT OR IGNORE INTO synky_auth_admins(user_id,original_email) VALUES(?,?)").bind(userId, email).run();
     stage = "audit-event";
     await db.prepare("INSERT INTO synky_auth_events(id,event_type,user_id,email,created_at) VALUES(?,?,?,?,?)")
       .bind(crypto.randomUUID(), "Conta administrativa inicializada", userId, email, now).run();

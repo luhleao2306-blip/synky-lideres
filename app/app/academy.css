@@ -442,3 +442,44 @@
 @media(max-width:1000px){.academy-shell .ac-performance-grid,.academy-shell .ac-exams-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.academy-shell .ac-performance-grid,.academy-shell .ac-exams-grid{grid-template-columns:1fr;gap:15px}.academy-shell .ac-performance-card,.academy-shell .ac-exam-course-card{padding:23px}.academy-shell .ac-performance-card dl{gap:10px}}
 @media(prefers-reduced-motion:reduce){.academy-shell .ac-performance-card,.academy-shell .ac-exam-course-card{transition:none}.academy-shell .ac-performance-card:hover,.academy-shell .ac-exam-course-card:hover{transform:none}}
+
+/* Configurações da conta, isoladas do site público. */
+.academy-shell .ac-avatar{overflow:hidden}
+.academy-shell .ac-avatar img{width:100%;height:100%;object-fit:cover}
+.academy-shell .ac-profile-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:28px;align-items:start}
+.academy-shell .ac-profile-summary{background:linear-gradient(145deg,#103f30,#137650);border-radius:23px;padding:32px 27px;color:white;position:sticky;top:150px}
+.academy-shell .ac-profile-summary>.ac-eyebrow{font-size:9px;line-height:1.8}
+.academy-shell .ac-profile-large-avatar{width:120px;height:120px;display:grid;place-items:center;border:4px solid #ffffff35;border-radius:50%;background:#ffffff18;overflow:hidden;margin:30px 0 22px;color:#d2f1df}
+.academy-shell .ac-profile-large-avatar img,.academy-shell .ac-profile-photo-preview img{width:100%;height:100%;object-fit:cover}
+.academy-shell .ac-profile-summary h2{font-size:27px;line-height:1.3;margin:0 0 12px;color:white;overflow-wrap:anywhere;letter-spacing:-.7px}
+.academy-shell .ac-profile-summary>p{font-size:13px;line-height:1.8;color:#d8ebe1;overflow-wrap:anywhere}
+.academy-shell .ac-profile-summary-note{border-top:1px solid #ffffff25;margin-top:28px;padding-top:25px}
+.academy-shell .ac-profile-summary-note p{color:#d8ebe1;font-size:12px;line-height:1.9;margin:12px 0 0}
+.academy-shell .ac-profile-signout{width:100%;border:1px solid #ffffff45;border-radius:11px;background:#ffffff0d;color:white;padding:12px 15px;font:inherit;font-size:12px;cursor:pointer;margin-top:28px;transition:background .2s}
+.academy-shell .ac-profile-signout:hover{background:#ffffff20}
+.academy-shell .ac-profile-forms{display:grid;gap:24px;min-width:0}
+.academy-shell .ac-profile-card{background:#fff;border:1px solid var(--ac-line);border-radius:22px;padding:30px;min-width:0}
+.academy-shell .ac-profile-card>header{display:flex;align-items:center;gap:15px;margin-bottom:18px}
+.academy-shell .ac-profile-card h2{font-size:25px;line-height:1.2;letter-spacing:-.6px;margin:6px 0 0}
+.academy-shell .ac-profile-card>p{font-size:13px;line-height:1.9;color:var(--ac-muted);margin:0 0 25px;max-width:650px}
+.academy-shell .ac-photo-controls{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.academy-shell .ac-profile-photo-preview{width:88px;height:88px;flex:none;display:grid;place-items:center;border-radius:50%;background:#edf6f0;border:1px solid #cee4d7;color:var(--ac-green);overflow:hidden}
+.academy-shell .ac-photo-controls small{display:block;font-size:11px;color:var(--ac-muted);margin-top:13px;line-height:1.7}
+.academy-shell .ac-photo-controls .ac-actions{margin:0;gap:12px}
+.academy-shell .ac-photo-controls .ac-button{font-size:12px;padding:11px 15px}
+.academy-shell .ac-profile-field{display:grid;gap:10px;min-width:0;margin-bottom:21px;color:var(--ac-ink)}
+.academy-shell .ac-profile-field>span{font-size:13px;font-weight:500}
+.academy-shell .ac-profile-field input{width:100%;min-width:0;min-height:48px;padding:12px 14px;border:1px solid #cbded2;border-radius:10px;background:#fcfefd;color:var(--ac-ink);font:inherit;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s}
+.academy-shell .ac-profile-field input:focus{border-color:var(--ac-green);box-shadow:0 0 0 3px #18895815}
+.academy-shell .ac-profile-field input:disabled{background:#f3f5f3;opacity:.7}
+.academy-shell .ac-password-control{position:relative}
+.academy-shell .ac-password-control input{padding-right:49px}
+.academy-shell .ac-password-control .ac-icon-button{position:absolute;right:6px;top:6px;color:var(--ac-muted)}
+.academy-shell .ac-profile-password-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.academy-shell .ac-profile-card form>.ac-button{margin-top:2px}
+.academy-shell .ac-profile-card .ac-alert{margin:20px 0 0;line-height:1.7}
+.academy-shell .ac-profile-card form .ac-alert{margin:0 0 20px}
+.academy-shell .ac-profile-page button:disabled{cursor:not-allowed;opacity:.55}
+@media(max-width:1000px){.academy-shell .ac-profile-layout{grid-template-columns:250px minmax(0,1fr);gap:20px}.academy-shell .ac-profile-password-grid{grid-template-columns:1fr;gap:0}.academy-shell .ac-profile-card{padding:25px}}
+@media(max-width:750px){.academy-shell .ac-profile-layout{grid-template-columns:1fr}.academy-shell .ac-profile-summary{position:static;padding:26px}.academy-shell .ac-profile-large-avatar{width:90px;height:90px;margin:22px 0 18px}.academy-shell .ac-profile-summary-note{display:flex;align-items:flex-start;gap:13px;margin-top:20px;padding-top:20px}.academy-shell .ac-profile-summary-note svg{flex:none}.academy-shell .ac-profile-summary-note p{margin:0}.academy-shell .ac-profile-card{padding:23px}.academy-shell .ac-photo-controls{gap:16px}.academy-shell .ac-profile-field input{font-size:16px}.academy-shell .ac-profile-card form>.ac-button{width:100%;justify-content:center}}
+@media(prefers-reduced-motion:reduce){.academy-shell .ac-profile-signout,.academy-shell .ac-profile-field input{transition:none}}

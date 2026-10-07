@@ -261,3 +261,8 @@ Não existe mais prova geral ativa. Uma prova de curso é liberada somente pelo 
 Meu desempenho inclui apenas cursos iniciados por acesso à aula ou às atividades, além de progresso já registrado em versões anteriores. Há filtros por curso e conclusão, nota separada de práticas e prova, gráfico das provas com resultados existentes e histórico. A propriedade opcional started é compatível com o armazenamento anterior; IDs e notas dos oito cursos existentes foram preservados. O limite de histórico passa a dez mil tentativas para comportar novas atividades e repetições. A administração apresenta notas por curso no resumo sincronizado, preservando a nota geral antiga apenas como registro histórico.
 
 Mudanças limitadas à academia, seu resumo administrativo e documentação. Landing page, autenticação, imagens e estilos compartilhados não foram alterados. Checagem integral de tipos aprovada; compilação de produção faz parte do fluxo de publicação.
+
+
+## 2026-10-07 — Meu perfil e credenciais reais
+
+A página de configurações da academia foi substituída por ProfileSettings, com foto, prévia, envio, remoção, e-mail e senha atual/nova/confirmação. Os três itens antigos do menu foram retirados. O avatar é carregado do próprio usuário; histórico acadêmico mantém as chaves de empresa e membro. As APIs autenticadas persistem no D1, confirmam senha para credenciais, limitam tentativas e rotacionam sessões. Permissões locais administrativas usam associação por ID para preservar o acesso depois de editar e-mail; mudanças de endereço não concedem novos privilégios. Acesso externo sem senha local tem orientação para gerenciar credenciais no seu provedor. Landing page, imagens públicas e estilos compartilhados preservados.

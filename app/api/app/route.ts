@@ -6,6 +6,7 @@ import { careerPriorities, energyTypes, summarizeEnergy } from "../../../lib/add
 import { moduleKeys, resolveModules, type ModuleKey } from "../../../lib/modules";
 import { brazilDay } from "../../../lib/calendar";
 import { isPlatformAdmin } from "../../../lib/platform-admin";
+import { profilePhotoUrl } from "@/lib/profile";
 
 type Row = Record<string, unknown>;
 const json = (body: unknown, status=200) => Response.json(body,{status});
@@ -33,6 +34,7 @@ export async function GET(request:Request) {
   try {
     const access=await getAppUser(request,false),user=access.user;
     if(!user)return fail("Não foi possível iniciar sua visita.",401);
+    const avatarUrl=await profilePhotoUrl(user.userId);
     const respond=(body:unknown,status=200)=>Response.json(body,{status,headers:access.cookie?{"Set-Cookie":access.cookie}:{}});
     const url=new URL(request.url);
     const token=url.searchParams.get("invite");
@@ -49,7 +51,7 @@ export async function GET(request:Request) {
     }
     const memberships=await all("SELECT m.company_id AS companyId,m.role,c.name AS companyName FROM members m JOIN companies c ON c.id=m.company_id WHERE m.user_id=? ORDER BY c.name",user.userId);
     const platformAdmin=isPlatformAdmin(user);
-    if(!m){if(companySelection&&!invite&&memberships.length)return respond({error:"Você não tem acesso a esta empresa."},403);return respond({needsSetup:platformAdmin&&!(await one("SELECT id FROM companies LIMIT 1")),invite:invite?{type:invite.type,token,companyId:invite.company_id,companyName:invite.company_name,role:invite.role,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite,user:{name:user.displayName,email:user.email},isGuest:user.isGuest,memberships,platformAdmin})}
+    if(!m){if(companySelection&&!invite&&memberships.length)return respond({error:"Você não tem acesso a esta empresa."},403);return respond({needsSetup:platformAdmin&&!(await one("SELECT id FROM companies LIMIT 1")),invite:invite?{type:invite.type,token,companyId:invite.company_id,companyName:invite.company_name,role:invite.role,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite,user:{name:user.displayName,email:user.email,avatarUrl},isGuest:user.isGuest,memberships,platformAdmin})}
     const companyId=String(m.company_id),memberId=String(m.id);
     const cycles=await all("SELECT * FROM mirror_cycles WHERE company_id=? AND leader_id=? ORDER BY created_at DESC",companyId,memberId);
     const mirrors=await Promise.all(cycles.map(async cycle=>{
@@ -104,7 +106,7 @@ export async function GET(request:Request) {
       thermometerTracks:Number((await one("SELECT COUNT(*) AS n FROM thermometer_tracks WHERE company_id=?",companyId))?.n||0),
     }:null;
     const platformCompanies=platformAdmin?await all("SELECT c.id,c.name,c.created_at AS createdAt,COUNT(m.id) AS people FROM companies c JOIN members owner ON owner.company_id=c.id AND owner.user_id=? AND owner.role='admin' LEFT JOIN members m ON m.company_id=c.id WHERE c.kind='organization' GROUP BY c.id ORDER BY c.created_at DESC",user.userId):[];
-    return respond({user:{name:user.isGuest?String(m.name):user.displayName,email:user.isGuest?String(m.email):user.email},isGuest:user.isGuest,membership:{id:memberId,role:m.role,companyId,companyName:m.company_name,kind:m.company_kind},memberships,platformAdmin,platformCompanies,moduleSettings:resolveModules(m.modules_json),mirrors,mirrorRequests,runs:runs.map(r=>({...r,choices:parse(r.choices)})),decisionCount,pairs,pendingCommunication,communicationCandidates,energyEntries:energyRows,energySummary,energyShares,sharedEnergy,careerRuns,thermometerTracks,thermometerRequests:thermometerRequests.map(row=>({...row,dimensions:parse(row.dimensions)})),people,pendingInvites,companyStats,invite:invite?{type:invite.type,token,companyId:invite.company_id,companyName:invite.company_name,role:invite.role,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite});
+    return respond({user:{name:user.isGuest?String(m.name):user.displayName,email:user.isGuest?String(m.email):user.email,avatarUrl},isGuest:user.isGuest,membership:{id:memberId,role:m.role,companyId,companyName:m.company_name,kind:m.company_kind},memberships,platformAdmin,platformCompanies,moduleSettings:resolveModules(m.modules_json),mirrors,mirrorRequests,runs:runs.map(r=>({...r,choices:parse(r.choices)})),decisionCount,pairs,pendingCommunication,communicationCandidates,energyEntries:energyRows,energySummary,energyShares,sharedEnergy,careerRuns,thermometerTracks,thermometerRequests:thermometerRequests.map(row=>({...row,dimensions:parse(row.dimensions)})),people,pendingInvites,companyStats,invite:invite?{type:invite.type,token,companyId:invite.company_id,companyName:invite.company_name,role:invite.role,referenceId:invite.reference_id}:null,inviteError:!!token&&!invite});
   } catch(e){console.error("app get failed",e);return fail("Não foi possível carregar os dados. Tente novamente.",500)}
 }
 export async function POST(request:Request) {

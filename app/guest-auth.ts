@@ -9,7 +9,7 @@ const ONE_HUB = "https://one.synky.com.br";
 const COOKIE_NAME = "synky_visitor";
 const COOKIE_AGE = 60 * 60 * 24 * 365;
 
-export type AppUser = ChatGPTUser & { isGuest: boolean };
+export type AppUser = ChatGPTUser & { isGuest: boolean; platformAdmin?: boolean };
 
 function visitorToken(request: Request): string | null {
   const cookie = request.headers.get("cookie")?.split(";").map(part => part.trim())
