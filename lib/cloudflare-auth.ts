@@ -3,7 +3,7 @@ import { env } from "cloudflare:workers";
 
 const SESSION_COOKIE = "synky_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 7;
-const PASSWORD_ITERATIONS = 210_000;
+const PASSWORD_ITERATIONS = 100_000;
 const encoder = new TextEncoder();
 
 export type SynkyIdentity = {
