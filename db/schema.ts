@@ -90,6 +90,11 @@ export const communicationPairs = sqliteTable("communication_pairs", {
   agreement: text("agreement").notNull().default(""),
   createdAt: text("created_at").notNull(),
 }, t => [index("idx_comm_company").on(t.companyId)]);
+export const synkyOneIdentities = sqliteTable("synky_one_identities", {
+  oneUserId: text("one_user_id").primaryKey(),
+  userId: text("user_id").notNull(),
+});
+
 export const communicationResponses = sqliteTable("communication_responses", {
   id: text("id").primaryKey(),
   pairId: text("pair_id").notNull().references(() => communicationPairs.id),

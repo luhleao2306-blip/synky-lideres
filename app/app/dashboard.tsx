@@ -12,7 +12,7 @@ export default function Dashboard(){
   const request=useRef<AbortController|null>(null);
   const refresh=useCallback(async()=>{
     request.current?.abort();const controller=new AbortController();request.current=controller;setRefreshing(true);
-    try{const response=await fetch(`/api/app${companyId?`?company=${encodeURIComponent(companyId)}`:""}`,{cache:"no-store",signal:controller.signal});const body=await response.json() as Data&{error?:string};if(!response.ok)throw new Error(body.error||"Não foi possível carregar sua conta.");if(!controller.signal.aborted){setData(body);setError("");}}
+    try{const response=await fetch(`/api/app${companyId?`?company=${encodeURIComponent(companyId)}`:""}`,{cache:"no-store",signal:AbortSignal.any([controller.signal,AbortSignal.timeout(20000)])});const body=await response.json() as Data&{error?:string};if(!response.ok)throw new Error(body.error||"Não foi possível carregar sua conta.");if(!controller.signal.aborted){setData(body);setError("");}}
     catch(cause){if(!controller.signal.aborted)setError(cause instanceof Error?cause.message:"Falha de conexão.");}
     finally{if(!controller.signal.aborted){setLoading(false);setRefreshing(false);}}
   },[companyId]);

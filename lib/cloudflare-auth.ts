@@ -83,24 +83,19 @@ const schema = [
   )`,
 ];
 
-let schemaPromise: Promise<void> | null = null;
+let schemaReady = false;
 
 export async function ensureAuthSchema(db: D1Database = requiredDb()): Promise<void> {
-  if (!schemaPromise) {
-    schemaPromise = (async () => {
-      for (let index = 0; index < schema.length; index += 1) {
-        try { await db.prepare(schema[index]).run(); }
-        catch (error) {
-          console.error("auth schema step failed", index, error instanceof Error ? error.message : String(error));
-          throw error;
-        }
-      }
-    })().catch((error) => {
-      schemaPromise = null;
+  if (schemaReady) return;
+  // D1 I/O belongs to its request. Never share a pending initialization promise.
+  for (let index = 0; index < schema.length; index += 1) {
+    try { await db.prepare(schema[index]).run(); }
+    catch (error) {
+      console.error("auth schema step failed", index, error instanceof Error ? error.message : String(error));
       throw error;
-    });
+    }
   }
-  await schemaPromise;
+  schemaReady = true;
 }
 
 function requiredDb(): D1Database {

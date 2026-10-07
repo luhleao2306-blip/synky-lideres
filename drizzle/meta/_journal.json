@@ -50,6 +50,13 @@
       "when": 1791385866347,
       "tag": "0006_strong_luke_cage",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1791394222712,
+      "tag": "0007_illegal_karen_page",
+      "breakpoints": true
     }
   ]
 }

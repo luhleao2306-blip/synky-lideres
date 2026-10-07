@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   try {
     response = await fetch(`${HUB}/api/grants/check`, {
       method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-      body: JSON.stringify({ product: "lideres" }), cache: "no-store",
+      body: JSON.stringify({ product: "lideres" }), cache: "no-store", signal: AbortSignal.timeout(10000),
     });
   } catch { return new Response("Não foi possível verificar seu acesso.", { status: 503 }); }
   if (!response.ok) return Response.redirect(`${HUB}/painel`, 303);

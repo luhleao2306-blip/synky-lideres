@@ -2,6 +2,7 @@ import { env } from "cloudflare:workers";
 import { getChatGPTUser, type ChatGPTUser } from "./chatgpt-auth";
 import { identityFromCookie } from "@/lib/cloudflare-auth";
 import { isPlatformAdmin } from "@/lib/platform-admin";
+import { oneMemberIdentity } from "@/lib/one-membership";
 
 const ONE_COOKIE = "__Host-synky_one_access";
 const ONE_HUB = "https://one.synky.com.br";
@@ -24,8 +25,6 @@ async function visitorId(token: string): Promise<string> {
 }
 
 export async function getAppUser(request: Request, createVisitor = false): Promise<{ user: AppUser | null; cookie?: string }> {
-  const session = await identityFromCookie(request.headers.get("cookie"));
-  if (session) return { user: session };
   const centralCookie = request.headers.get("cookie")?.split(";").map(part => part.trim())
     .find(part => part.startsWith(`${ONE_COOKIE}=`));
   if (centralCookie) {
@@ -34,17 +33,15 @@ export async function getAppUser(request: Request, createVisitor = false): Promi
     try {
       const response = await fetch(`${ONE_HUB}/api/grants/check`, {
         method: "POST", headers: { authorization: `Bearer ${accessToken}`, "content-type": "application/json" },
-        body: JSON.stringify({ product: "lideres" }), cache: "no-store",
+        body: JSON.stringify({ product: "lideres" }), cache: "no-store", signal: AbortSignal.timeout(10000),
       });
       if (!response.ok) return { user: null };
-      const identity = await response.json() as { id: string; email: string; name: string };
-      const member = await env.DB.prepare("SELECT user_id FROM members WHERE email=? ORDER BY rowid LIMIT 1")
-        .bind(identity.email.trim().toLowerCase()).first<{ user_id: string }>();
-      if (!member && !isPlatformAdmin({ email: identity.email, isGuest: false })) return { user: null };
-      return { user: { userId: member?.user_id || `one:${identity.id}`, email: identity.email,
-        displayName: identity.name, fullName: identity.name, isGuest: false } };
+      const identity = await response.json() as { id: string; email: string; name: string; is_admin?: boolean };
+      return { user: await oneMemberIdentity(env.DB, identity) };
     } catch { return { user: null }; }
   }
+  const session = await identityFromCookie(request.headers.get("cookie"));
+  if (session) return { user: session };
   const account = await getChatGPTUser();
   if (account) {
     const member = env.DB ? await env.DB.prepare("SELECT user_id FROM members WHERE email=? ORDER BY rowid LIMIT 1").bind(account.email.trim().toLowerCase()).first<{ user_id: string }>().catch(() => null) : null;
