@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 import { getChatGPTUser, type ChatGPTUser } from "./chatgpt-auth";
 import { identityFromCookie } from "@/lib/cloudflare-auth";
+import { isPlatformAdmin } from "@/lib/platform-admin";
 
 const ONE_COOKIE = "__Host-synky_one_access";
 const ONE_HUB = "https://one.synky.com.br";
@@ -38,16 +39,21 @@ export async function getAppUser(request: Request, createVisitor = false): Promi
       if (!response.ok) return { user: null };
       const identity = await response.json() as { id: string; email: string; name: string };
       const member = await env.DB.prepare("SELECT user_id FROM members WHERE email=? ORDER BY rowid LIMIT 1")
-        .bind(identity.email).first<{ user_id: string }>();
+        .bind(identity.email.trim().toLowerCase()).first<{ user_id: string }>();
+      if (!member && !isPlatformAdmin({ email: identity.email, isGuest: false })) return { user: null };
       return { user: { userId: member?.user_id || `one:${identity.id}`, email: identity.email,
         displayName: identity.name, fullName: identity.name, isGuest: false } };
     } catch { return { user: null }; }
   }
   const account = await getChatGPTUser();
-  if (account) return { user: { ...account, isGuest: false } };
+  if (account) {
+    const member = env.DB ? await env.DB.prepare("SELECT user_id FROM members WHERE email=? ORDER BY rowid LIMIT 1").bind(account.email.trim().toLowerCase()).first<{ user_id: string }>().catch(() => null) : null;
+    if (!member && !isPlatformAdmin({ email: account.email, isGuest: false })) return { user: null };
+    return { user: { ...account, userId: member?.user_id || account.userId, isGuest: false } };
+  }
 
+  if (!createVisitor) return { user: null };
   let token = visitorToken(request);
-  if (!token && !createVisitor) return { user: null };
   let cookie: string | undefined;
   if (!token) {
     token = crypto.randomUUID();

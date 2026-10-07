@@ -12,7 +12,7 @@ A apresentação precisa ser marcante e profissional para quem considera comprar
 
 Há seis experiências: Espelho do Líder, Decisões Sob Pressão, Raio X da Comunicação, Mapa de Energia, Bússola de Carreira e Termômetro de Liderança. O produto tem formulários, resultados e histórico, além de empresas, membros, convites, perfis de acesso, área de time e painel de evolução. A área de Resultados permite consultar o próprio histórico; a administração master pode localizar pessoas em todos os espaços.
 
-O painel agora exige uma conta autenticada. Clientes entram por links de cadastro individuais, criados pela administração e válidos por sete dias; não há cadastro público nem envio automático do convite por e-mail. O servidor aplica permissões por empresa e por perfil. Espelho do Líder e Termômetro só mostram médias do time depois do encerramento e de pelo menos cinco respostas válidas. A comparação do Raio X da Comunicação exige que as duas pessoas concluam e autorizem o compartilhamento.
+O painel agora exige uma conta autenticada. Clientes entram por links de cadastro individuais, criados pela administração e válidos por sete dias; não há cadastro público nem envio automático do convite por e-mail. Sessões legadas sem vínculo com uma empresa não criam espaços automaticamente. O servidor aplica permissões por empresa e por perfil. Espelho do Líder e Termômetro só mostram médias do time depois do encerramento e de pelo menos cinco respostas válidas. A comparação do Raio X da Comunicação exige que as duas pessoas concluam e autorizem o compartilhamento.
 
 ## Estado visual da página inicial
 
