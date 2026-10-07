@@ -64,3 +64,7 @@ A nota geral de um curso é a média simples entre a média das últimas prátic
 Feedback fica disponível em Meu desempenho: curso iniciado, avaliação de 1 a 5 e comentário de até 2.000 caracteres. A pessoa pode atualizar seu próprio feedback; o administrador apenas consulta. As APIs /api/results, /api/academy/progress, /api/academy/feedback e /api/academy/certificates/[id] validam sessão e vínculo no servidor. Alterações exigem origem do próprio site. A migração 0006 é aditiva, com quatro tabelas próprias da academia, também inicializadas pelo mecanismo runtime existente.
 
 Componentes antigos e ações de experiências foram removidos. O layout, imagens e estilos da LP foram mantidos; somente textos que descreviam recursos retirados (FAQ, privacidade e página empresarial) foram corrigidos para o produto atual. Checagem integral de tipos e lint dos arquivos alterados aprovados; compilação de produção pelo fluxo Sites. Nenhum dado de cliente foi criado para conferência e nenhuma conta real foi alterada.
+
+## Fonte da administração — 7 de outubro de 2026
+
+A área /admin usa LandingDisplay (Red Hat Display), já disponível localmente na marca, para títulos, números, menus, campos, botões e consulta de resultados. Títulos e métricas usam peso 600; números de notas e métricas têm alinhamento tabular. A alteração é restrita a app/admin/admin.css e aos seletores dentro de .admin-shell, incluindo a tela de resultados compartilhada somente quando exibida pela administração. Nenhum estilo da LP ou da academia do aluno foi alterado.
