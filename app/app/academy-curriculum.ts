@@ -1,4 +1,6 @@
 import { additionalLessons, deepenExistingLesson, newStudyCourses } from "./academy-content";
+import { advancedQuestions, deepenLeadershipLesson } from "./academy-challenges";
+import { advancedFinalQuestions } from "./academy-final";
 import type { StudyCourse, StudyQuestion } from "./academy-types";
 export type { StudyCourse, StudyLesson, StudyQuestion } from "./academy-types";
 const q = (id: string, lessonId: string, prompt: string, options: string[], correct: number, explanation: string): StudyQuestion => ({ id, lessonId, prompt, options, correct, explanation });
@@ -63,29 +65,43 @@ const originalStudyCourses: StudyCourse[] = [
     ], takeaways: ["Reconheça a ação e o impacto, sem comparar pessoas.", "Considere a preferência da pessoa sobre reconhecimento.", "Use sinais para abrir uma conversa, não para adivinhar causas."], example: "Uma pessoa que costumava participar ficou em silêncio em duas reuniões. Você descreve o que observou em uma conversa privada e pergunta como ela percebeu os encontros, em vez de anunciar que ela perdeu o interesse pelo trabalho.", application: "Reconheça uma contribuição específica e, ao observar um sinal de atenção, pergunte antes de concluir sua causa.", activity: q("a-reconhecimento", "reconhecimento", "Uma pessoa participou menos de duas reuniões. Qual é a interpretação adequada?", ["Ela certamente perdeu o interesse pelo trabalho.", "O sinal permite concluir uma característica de personalidade.", "A observação é um ponto de partida para conversar e entender o contexto.", "O silêncio deve ser usado para compará-la aos colegas."], 2, "Um sinal isolado não explica a causa. A conversa ajuda a separar observação, relato e interpretação."), final: q("f-reconhecimento", "reconhecimento", "Qual reconhecimento é específico e respeitoso?", ["‘Você é melhor que todos os colegas.’", "‘Você nunca deve errar depois deste elogio.’", "‘Vou expor sua contribuição publicamente mesmo que você não queira.’", "‘Seu resumo esclareceu a decisão; como você prefere que essa contribuição seja reconhecida?’"], 3, "O reconhecimento descreve ação e impacto e considera a preferência da pessoa, sem compará-la com os colegas.") }
   ], transfer: q("a-equipe-caso", "aprendizagem", "Após uma conversa individual, vocês querem desenvolver a facilitação de reuniões. Qual próximo passo é mais coerente?", ["Exigir melhora geral sem oportunidade de prática.", "Escolher uma reunião de baixo risco, preparar a pessoa e revisar depois o que aconteceu.", "Medir a capacidade por uma única impressão.", "Substituir o acompanhamento por um elogio genérico."], 1, "Uma oportunidade concreta, com apoio e revisão, conecta a conversa de desenvolvimento à prática observável.") }
 ];
-export const studyCourses: StudyCourse[] = [
+const previousStudyCourses: StudyCourse[] = [
   ...originalStudyCourses.map(course => ({ ...course, lessons: [...course.lessons.map(deepenExistingLesson), ...additionalLessons[course.id]] })),
   ...newStudyCourses,
 ];
-// Conjuntos históricos exatos: ampliar o material não invalida notas ou rascunhos salvos.
-export const legacyStudyQuestionIds: Record<string, string[]> = Object.fromEntries([
-  ...originalStudyCourses.map(course => [course.id, [...course.lessons.map(lesson => lesson.activity.id), course.transfer.id]]),
-  ["avaliacao-final", originalStudyCourses.flatMap(course => course.lessons.map(lesson => lesson.final.id))],
-]);
+export const studyCourses: StudyCourse[] = previousStudyCourses.map(course => ({ ...course, lessons: course.lessons.map(deepenLeadershipLesson) }));
 export const allStudyLessons = studyCourses.flatMap(course => course.lessons);
-export const studyPractices = studyCourses.flatMap(course => course.lessons.flatMap(lesson => [lesson.activity, ...(lesson.additionalActivities || [])].map((question, index) => ({
-  id: `pratica:${course.id}:${question.id}`, courseId: course.id, lessonId: lesson.id, question,
-  title: `${lesson.title} · prática ${index + 1}`,
-}))));
-export const finalStudyQuestions = allStudyLessons.map(lesson => lesson.final);
+export const studyPractices = studyCourses.flatMap(course => course.lessons.flatMap(lesson => {
+  const application = advancedQuestions(lesson);
+  return [
+    ...[lesson.activity, ...(lesson.additionalActivities || [])].map((question, index) => ({
+      id: `pratica:${course.id}:${question.id}`, courseId: course.id, lessonId: lesson.id,
+      questions: [question, application[index]], kind: "exercise" as const,
+      title: `${lesson.title} · exercício ${index + 1}`,
+    })),
+    { id: `caso-v2:${course.id}:${lesson.id}`, courseId: course.id, lessonId: lesson.id,
+      questions: application, kind: "case" as const, title: `${lesson.title} · caso de aplicação` },
+  ];
+}));
+export const finalStudyQuestions = advancedFinalQuestions;
 export const FINAL_QUIZ_ID = "avaliacao-final";
-export const PASSING_GRADE = 7;
+export const PASSING_GRADE = 8;
+// Arquivo de questões imutáveis para recalcular e exibir tentativas das versões anteriores.
+export const historicalStudyQuestions: Record<string, StudyQuestion[][]> = Object.fromEntries([
+  ...previousStudyCourses.map(course => [course.id, [
+    [...course.lessons.flatMap(lesson => [lesson.activity, ...(lesson.additionalActivities || [])]), course.transfer],
+    ...(originalStudyCourses.find(item => item.id === course.id) ? [[...originalStudyCourses.find(item => item.id === course.id)!.lessons.map(lesson => lesson.activity), course.transfer]] : []),
+  ]]),
+  [FINAL_QUIZ_ID, [previousStudyCourses.flatMap(course => course.lessons.map(lesson => lesson.final)), originalStudyCourses.flatMap(course => course.lessons.map(lesson => lesson.final))]],
+  ...previousStudyCourses.flatMap(course => course.lessons.flatMap(lesson => [lesson.activity, ...(lesson.additionalActivities || [])].map(question => [`pratica:${course.id}:${question.id}`, [[question]]]))),
+]);
+export const legacyStudyQuestionIds = Object.fromEntries(Object.entries(historicalStudyQuestions).map(([id, sets]) => [id, sets[sets.length - 1].map(question => question.id)]));
 export function studyQuiz(id: string) {
   if (id === FINAL_QUIZ_ID) return { id, title: "Avaliação final de liderança", questions: finalStudyQuestions, course: null, lessons: allStudyLessons, practice: false };
   const course = studyCourses.find(item => item.id === id);
-  if (course) return { id, title: `Avaliação · ${course.title}`, questions: [...course.lessons.flatMap(lesson => [lesson.activity, ...(lesson.additionalActivities || [])]), course.transfer], course, lessons: course.lessons, practice: false };
+  if (course) return { id, title: `Avaliação · ${course.title}`, questions: course.lessons.flatMap(advancedQuestions), course, lessons: course.lessons, practice: false };
   const practice = studyPractices.find(item => item.id === id);
   if (!practice) return null;
   const practiceCourse = studyCourses.find(item => item.id === practice.courseId)!;
-  return { id, title: practice.title, questions: [practice.question], course: practiceCourse, lessons: practiceCourse.lessons.filter(lesson => lesson.id === practice.lessonId), practice: true };
+  return { id, title: practice.title, questions: practice.questions, course: practiceCourse, lessons: practiceCourse.lessons.filter(lesson => lesson.id === practice.lessonId), practice: true };
 }

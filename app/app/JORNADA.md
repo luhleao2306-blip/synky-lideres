@@ -239,3 +239,14 @@ exige estudo das quarenta aulas e nota ≥ 7 na avaliação atual de cada curso.
 O histórico anterior permanece disponível, mas não substitui novas atividades.
 Persistência continua local ao navegador, isolada por empresa e pessoa.
 Conferência: tipos e compilação aprovados. No navegador, trilha com oito cursos, lista de quinze práticas por curso, vínculo da prática à aula e bloqueio por estudo, biblioteca com filtro por curso e layout de celular a 390 px sem transbordamento horizontal. Nenhum progresso ou nota de usuário foi criado durante a conferência.
+
+
+## 2026-10-07 — Academia com aplicação e avaliação avançada
+
+Removidos do menu do aluno os itens de experiências conectadas, histórico, resultados e jornada pessoal (ponto de partida, reflexão, plano, exercícios, diário e revisão). O painel usa a navegação superior da academia; conta, pessoas e administração continuam acessíveis pelos respectivos perfis. Links antigos das telas removidas abrem a visão geral. Não foi alterado nenhum arquivo, imagem ou estilo da landing page.
+
+Os oito cursos mantêm cinco aulas cada, ampliadas com cenário, restrições e raciocínio de aplicação. Cada curso reúne vinte atividades: quinze exercícios de duas questões e cinco casos com quatro decisões. Há filtros por curso, atividades pendentes, realizadas e casos. As avaliações têm vinte questões contextuais; a prova final reúne vinte novos casos que cobrem os oito cursos. As respostas continuam por alternativas, com nota, correção, referência à aula e histórico.
+
+As práticas exigem estudo da aula; a avaliação do curso exige todas as aulas e práticas atuais; nota mínima 8 conclui o curso. A prova final exige os oito cursos concluídos. Versões anteriores de avaliações e práticas preservam notas, rascunhos e correções, mas não substituem os requisitos novos. O resumo administrativo considera a conclusão completa e a nota da versão atual. Nenhum dado real foi criado ou removido.
+
+Verificação: sete testes de conteúdo, cálculo, bloqueios, isolamento e compatibilidade do histórico passaram. Na prévia com armazenamento descartável, conferidos menu, filtro de casos, estudo, liberação da prática, validação de respostas em branco, nota calculada, correção e prova final de vinte questões. Tela de 390 px sem transbordamento horizontal. A rota de prévia é removida antes de publicar. Correções exclusivamente de tipos no cadastro e no buffer de hash também permitem a checagem integral do projeto, sem alterar esses fluxos.
