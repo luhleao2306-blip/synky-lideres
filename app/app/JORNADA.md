@@ -266,3 +266,9 @@ Mudanças limitadas à academia, seu resumo administrativo e documentação. Lan
 ## 2026-10-07 — Meu perfil e credenciais reais
 
 A página de configurações da academia foi substituída por ProfileSettings, com foto, prévia, envio, remoção, e-mail e senha atual/nova/confirmação. Os três itens antigos do menu foram retirados. O avatar é carregado do próprio usuário; histórico acadêmico mantém as chaves de empresa e membro. As APIs autenticadas persistem no D1, confirmam senha para credenciais, limitam tentativas e rotacionam sessões. Permissões locais administrativas usam associação por ID para preservar o acesso depois de editar e-mail; mudanças de endereço não concedem novos privilégios. Acesso externo sem senha local tem orientação para gerenciar credenciais no seu provedor. Landing page, imagens públicas e estilos compartilhados preservados.
+
+## Resultados exclusivos de cursos — 7 de outubro de 2026
+
+Retiradas as seis ferramentas antigas, suas páginas, componentes, consultas e ações. O painel está limitado à academia e ao perfil. Resultados administrativos agora têm pesquisa de clientes, cursos iniciados/concluídos, aulas, vinte atividades por curso, notas de práticas, prova e nota geral com fórmula visível, histórico, certificados emitidos e feedbacks reais. Meu desempenho também dá acesso aos certificados e ao envio de feedback.
+
+Persistência completa no D1 por membro/empresa, recuperação entre dispositivos, cópia local, união das tentativas e revisão para conflitos. Notas recalculadas no servidor; certificados únicos após conclusão validada. Resumos de notas anteriores são preservados e diferenciados de dados completos. A migração 0006 é aditiva. Tipos e lint aprovados; compilação no fluxo de publicação. Nenhum cliente ou nota fictícia foi criado.

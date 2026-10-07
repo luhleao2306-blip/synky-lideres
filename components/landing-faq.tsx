@@ -5,11 +5,11 @@ import { ArrowDown, ArrowUpRight } from "lucide-react";
 
 const questions = [
   { q: "A Synky Líderes é para quem já ocupa uma posição de liderança?", a: "Sim. O sistema apoia quem já lidera em decisões, comunicação e relações de equipe. Algumas atividades também podem envolver colegas." },
-  { q: "Como os resultados da equipe são compartilhados?", a: "Depois do encerramento do ciclo e com pelo menos cinco respostas válidas, a liderança vê médias agregadas. Respostas individuais não são exibidas." },
-  { q: "Quando a comparação em dupla fica disponível?", a: "As duas pessoas precisam responder e consentir com o compartilhamento. Cada participante pode encerrar a dupla." },
-  { q: "A empresa precisa ativar tudo?", a: "Não. Em ambientes de empresa, a administração escolhe quais atividades disponibilizar e convida pessoas conforme o contexto." },
+  { q: "O que aparece nos resultados dos cursos?", a: "Você acompanha atividades, notas e provas de cada curso. A administração também consulta esses registros, certificados e feedbacks." },
+  { q: "Como a prova de cada curso é liberada?", a: "A prova final fica disponível depois de estudar todas as aulas e realizar as vinte atividades do curso. Ela tem vinte questões de alternativas." },
+  { q: "Posso estudar mais de um curso?", a: "Sim. A plataforma tem 25 cursos independentes, cada um com suas aulas, atividades e prova final." },
   { q: "Os convites são enviados automaticamente por e-mail?", a: "A plataforma prepara e organiza convites por pessoa; o envio depende da ação de quem está administrando." },
-  { q: "As atividades indicam uma resposta certa?", a: "Não. Elas apoiam a reflexão e não definem perfil, cargo ou desempenho." },
+  { q: "Como recebo meu certificado?", a: "Conclua as aulas e atividades e alcance pelo menos 8 na prova do curso. O certificado fica disponível no painel para imprimir ou salvar em PDF." },
 ];
 
 export default function LandingFaq() {

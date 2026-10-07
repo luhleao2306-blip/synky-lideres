@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text, uniqueIndex, index } from "drizzle-orm/sqlite-core";
+import { integer, real, primaryKey, sqliteTable, text, uniqueIndex, index } from "drizzle-orm/sqlite-core";
 
 export const companies = sqliteTable("companies", {
   id: text("id").primaryKey(),
@@ -7,6 +7,27 @@ export const companies = sqliteTable("companies", {
   modules: text("modules").notNull().default("{}"),
   createdAt: text("created_at").notNull(),
 });
+
+// As tabelas anteriores das experiências permanecem apenas como arquivo.
+// Os resultados ativos pertencem à academia e são isolados por membro e empresa.
+export const academyRecords = sqliteTable("synky_academy_records", {
+  memberId: text("member_id").notNull(), companyId: text("company_id").notNull(),
+  progress: text("progress").notNull(), revision: integer("revision").notNull().default(1),
+  writeId: text("write_id").notNull(), updatedAt: text("updated_at").notNull(),
+}, table => [primaryKey({columns:[table.memberId,table.companyId]})]);
+export const academyLegacySnapshots = sqliteTable("synky_academy_legacy_snapshots", {
+  memberId: text("member_id").notNull(), companyId: text("company_id").notNull(),
+  courseProgress: text("course_progress").notNull(), updatedAt: text("updated_at").notNull(),
+}, table => [primaryKey({columns:[table.memberId,table.companyId]})]);
+export const courseCertificates = sqliteTable("synky_course_certificates", {
+  id: text("id").primaryKey(), memberId: text("member_id").notNull(), companyId: text("company_id").notNull(),
+  courseId: text("course_id").notNull(), courseTitle: text("course_title").notNull(),
+  recipient: text("recipient").notNull(), grade: real("grade").notNull(), issuedAt: text("issued_at").notNull(),
+}, table => [uniqueIndex("idx_course_certificate_unique").on(table.memberId,table.companyId,table.courseId)]);
+export const courseFeedback = sqliteTable("synky_course_feedback", {
+  memberId: text("member_id").notNull(), companyId: text("company_id").notNull(), courseId: text("course_id").notNull(),
+  rating: integer("rating").notNull(), message: text("message").notNull(), updatedAt: text("updated_at").notNull(),
+}, table => [primaryKey({columns:[table.memberId,table.companyId,table.courseId]})]);
 export const members = sqliteTable("members", {
   id: text("id").primaryKey(),
   companyId: text("company_id").notNull().references(() => companies.id),

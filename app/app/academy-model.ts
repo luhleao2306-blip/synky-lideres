@@ -72,3 +72,10 @@ export function parseStudyProgress(raw: string): StudyProgress {
   if (value.started !== undefined && (!Array.isArray(value.started) || value.started.some((id: unknown) => typeof id !== "string" || !studyCourses.some(course => course.id === id)))) throw new Error("Curso inválido no progresso salvo.");
   return { version: 1, ...(value.started !== undefined ? { started: [...new Set(value.started as string[])] } : {}), studied: ids(value.studied), bookmarks: ids(value.bookmarks), drafts, attempts, updatedAt: typeof value.updatedAt === "string" && Number.isFinite(Date.parse(value.updatedAt)) ? value.updatedAt : null };
 }
+
+export function mergeStudyProgress(remote: StudyProgress, local: StudyProgress): StudyProgress {
+  const attempts = new Map(remote.attempts.map(item => [item.id, item]));
+  for (const attempt of local.attempts) if (!attempts.has(attempt.id)) attempts.set(attempt.id, attempt);
+  const recent = (Date.parse(local.updatedAt || "") || 0) >= (Date.parse(remote.updatedAt || "") || 0) ? local : remote;
+  return { version: 1, started: [...new Set([...(remote.started || []), ...(local.started || [])])], studied: [...new Set([...remote.studied, ...local.studied])], bookmarks: recent.bookmarks, drafts: recent.drafts, attempts: [...attempts.values()].sort((a,b) => Date.parse(a.at) - Date.parse(b.at)), updatedAt: recent.updatedAt };
+}

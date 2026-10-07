@@ -4,9 +4,9 @@ import { useState } from "react";
 import { ArrowLeft, ArrowRight, ArrowUpRight, LockKeyhole } from "lucide-react";
 
 const slides = [
-  { name: "Resultados do time", text: "Percepções em conjunto.", detail: "Médias agregadas aparecem depois do encerramento do ciclo e com pelo menos cinco respostas válidas. Respostas individuais não são exibidas.", href: "#duvidas", image: "/images/landing/privacy-mirror.webp", alt: "Equipe reunida em conversa de trabalho" },
-  { name: "Participação em dupla", text: "Compartilhamento consentido.", detail: "A comparação fica disponível quando as duas pessoas respondem e autorizam o compartilhamento. Cada participante pode encerrar a dupla.", href: "#duvidas", image: "/images/landing/privacy-communication.webp", alt: "Duas colegas conversam diante de um computador" },
-  { name: "Resumo individual", text: "Você decide compartilhar.", detail: "Liderança e RH recebem somente o resumo que a própria pessoa escolher compartilhar. O diário completo tem acesso restrito na área de Resultados.", href: "#duvidas", image: "/images/landing/privacy-energy.webp", alt: "Pessoa trabalha em um computador em um espaço compartilhado" },
+  { name: "Resultados dos cursos", text: "Seu aprendizado em perspectiva.", detail: "Notas mostram o resultado das atividades e da prova de cada curso. Você e a administração podem acompanhar esses registros.", href: "#duvidas", image: "/images/landing/privacy-mirror.webp", alt: "Equipe reunida em conversa de trabalho" },
+  { name: "Certificados de conclusão", text: "Conquistas registradas na conta.", detail: "Cada curso gera seu certificado após concluir os estudos e atividades e alcançar nota mínima 8 na prova.", href: "#duvidas", image: "/images/landing/privacy-communication.webp", alt: "Duas colegas conversam diante de um computador" },
+  { name: "Feedback sobre os cursos", text: "Sua opinião ajuda a melhorar.", detail: "Envie uma avaliação e um comentário sobre o curso no painel. A administração pode consultar os feedbacks que você salvar.", href: "#duvidas", image: "/images/landing/privacy-energy.webp", alt: "Pessoa trabalha em um computador em um espaço compartilhado" },
 ];
 
 export default function LandingPrivacyCarousel() {

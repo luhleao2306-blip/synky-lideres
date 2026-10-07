@@ -1,42 +1,26 @@
 # Synky Líderes
 
-Plataforma de experiências de desenvolvimento humano em português do Brasil.
+Academia em português do Brasil para pessoas que já exercem liderança. A página pública apresenta o produto; o painel exige login, com cadastro exclusivo por convite individual criado pela administração.
 
-A página pública apresenta o produto e dá acesso à plataforma. O painel inclui uma academia para pessoas que já lideram, além das experiências e dos recursos de equipe existentes. Os links entre páginas usam navegação HTML nativa porque a navegação cliente do `next/link` falha no runtime vinext da hospedagem Sites. Visitantes recebem um espaço próprio, associado a um cookie seguro do navegador.
+## Academia
 
-## Academia de liderança
+- 25 cursos, 125 aulas e 500 atividades: vinte atividades de alternativas por curso.
+- Uma prova de vinte questões por curso, liberada após suas aulas e atividades; conclusão com nota mínima 8.
+- Trilha, biblioteca com busca e favoritos, desempenho, histórico de tentativas e exportação.
+- Progresso sincronizado na conta no D1, com cópia no navegador e proteção contra sobrescritas concorrentes.
+- Certificado por curso concluído, com impressão e opção de salvar em PDF pelo navegador.
+- Feedback por curso: avaliação de 1 a 5 e comentário, com atualização pelo próprio cliente.
+- Perfil com foto, troca de e-mail e senha mediante confirmação da senha atual.
 
-- **8 cursos e 40 aulas:** decisões, comunicação, delegação, desenvolvimento do time, metas, confiança e conflitos, mudanças e rotina da liderança.
-- **15 práticas por curso:** 120 atividades breves de múltipla escolha, com conteúdo de estudo vinculado, nota e correção.
-- **Avaliação de cada curso:** 16 questões, nota de 0 a 10 e histórico de tentativas.
-- **Prova final:** 40 questões baseadas nas aulas, liberada após o estudo e nota mínima 7 nas avaliações atuais dos cursos.
-- Biblioteca com busca, filtro por curso e favoritos; painel de notas e exportação de registros.
+## Administração
 
-O progresso da academia é salvo neste navegador, separado por empresa e pessoa; ainda não é sincronizado entre dispositivos. O histórico anterior à ampliação do currículo é preservado. Os registros da implementação estão em [app/app/JORNADA.md](app/app/JORNADA.md).
+Em /admin, o administrador master pesquisa clientes e consulta cursos, aulas, atividades, notas de prova, nota geral, certificados e feedbacks reais. Também gera links individuais de cadastro válidos por sete dias e acompanha eventos de acesso e registros da academia. Clientes só consultam seus próprios resultados. As seis ferramentas anteriores foram retiradas; suas tabelas históricas não são mais consultadas.
 
-## Funcional nesta versão
+Nota geral do curso: média simples da média das últimas notas de práticas atuais e da última prova atual. Nota geral do cliente: média dessas notas por curso. Cursos sem prova ou sem práticas ficam fora do cálculo. Resumos anteriores sem respostas detalhadas são identificados e preservados; não geram certificados automaticamente.
 
-- **Espelho do Líder:** autoavaliação, ciclos sucessivos, convites vinculados a e-mail, resposta do time, mínimo de cinco respostas para comparação agregada após encerramento e ação escolhida.
-- **Decisões Sob Pressão:** seis cenários jogáveis com três etapas, consequências narrativas e histórico.
-- **Raio X da Comunicação:** respostas separadas com consentimento, comparação compartilhada, acordo prático e remoção.
-- **Mapa de Energia:** registros rápidos por atividade e dia, padrões por categoria, diário privado e compartilhamento revogável somente do resumo com líder ou RH da mesma empresa.
-- **Bússola de Carreira:** oito dilemas, prioridades e tensões para reflexão, novas tentativas e comparação com o histórico pessoal.
-- **Termômetro de Liderança:** seleção de até três comportamentos após um Espelho concluído, rodadas respondidas pela mesma equipe e evolução agregada liberada só após encerramento e cinco respostas válidas por item.
-- **Equipe:** convites por link, cópia e preparação de e-mail, cancelamento de convites pendentes, lista de pessoas, visão de participação da empresa e alteração de perfil pelo administrador.
-- **Administração:** criação e alternância entre empresas pelo proprietário; ambientes pessoais públicos separados das empresas; nome e módulos configuráveis pelo administrador de cada empresa.
-- Empresas, perfis e dados persistidos em D1; API aplica autorização por empresa e papel.
+## Compilação e manutenção
 
-Visitantes sem conta recebem automaticamente um ambiente pessoal e podem usar as seis experiências. Seus dados são separados dos demais visitantes. Para convidados sem conta, o próprio link funciona como chave de acesso; depois de aceito, fica associado àquele navegador. Convites expiram após sete dias (acesso à empresa) ou quatorze dias (experiências). Contas ChatGPT existentes continuam podendo entrar para administração; nesse caso, o convite exige o e-mail informado.
-
-Em **Configurações**, visitantes podem atualizar o nome e informar um e-mail de contato. Esse e-mail é usado para localizar convites e permitir o compartilhamento de resumos dentro da mesma empresa. Ele não é verificado e não substitui o cookie de acesso.
-
-## Verificação
-
-- `node --test tests/results.test.mjs`
-- `node --test tests/public-flows.integration.mjs` (com o servidor local em `http://localhost:5173`)
-- `node node_modules/typescript/bin/tsc --noEmit`
-- `npm run lint`
-- `node scripts/run-framework.mjs build`
+Use checagem de tipos, lint e compilação antes de publicar. A migração 0006 adiciona as tabelas de registros, snapshots antigos, certificados e feedbacks; o runtime também inicializa essas tabelas de forma idempotente. Os links entre páginas usam navegação HTML nativa por compatibilidade com vinext.
 
 ## Desenvolvimento com outra pessoa
 
@@ -61,4 +45,4 @@ O repositório GitHub serve para revisar e compartilhar o código. Enviar commit
 
 ## Limites atuais
 
-O envio automático de convites por e-mail ainda não está configurado; a plataforma prepara a mensagem no aplicativo de e-mail do usuário ou permite copiar o link. Sem login, o histórico depende do cookie deste navegador e não acompanha a pessoa em outro dispositivo. A integração com o DISC anterior foi retirada do escopo a pedido do proprietário.
+Convites de cadastro são compartilhados manualmente; não há envio automático por e-mail. Os detalhes de notas existentes apenas no navegador antigo precisam ser sincronizados entrando no painel nesse navegador. Login local usa Cloudflare Workers/D1, hashes de senha e cookie de sessão protegido; não depende de Supabase. Não exponha credenciais de execução no repositório.

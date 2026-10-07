@@ -1,6 +1,6 @@
 # Contexto do Synky Líderes
 
-Este documento orienta quem vai continuar o desenvolvimento. O Synky Líderes é uma plataforma em português do Brasil para experiências práticas de liderança, comunicação, carreira e trabalho em equipe. O site público está em https://synky-lideres.contato146558.chatgpt.site.
+Este documento orienta quem vai continuar o desenvolvimento. O Synky Líderes é uma academia em português do Brasil para desenvolvimento de pessoas que já lideram. O site público está em https://synky-lideres.contato146558.chatgpt.site.
 
 ## Direção definida pelo proprietário
 
@@ -10,9 +10,11 @@ A apresentação precisa ser marcante e profissional para quem considera comprar
 
 ## Funcionalidades atuais
 
-Há seis experiências: Espelho do Líder, Decisões Sob Pressão, Raio X da Comunicação, Mapa de Energia, Bússola de Carreira e Termômetro de Liderança. O produto tem formulários, resultados e histórico, além de empresas, membros, convites, perfis de acesso, área de time e painel de evolução. A área de Resultados permite consultar o próprio histórico; a administração master pode localizar pessoas em todos os espaços.
+A academia tem 25 cursos, 125 aulas e 500 atividades de alternativas. Cada curso tem 20 atividades e sua própria prova de 20 questões, liberada após estudar as aulas e realizar todas as atividades. A conclusão exige nota mínima 8 na prova. O painel possui trilha, atividades, provas, desempenho, biblioteca e perfil.
 
-O painel agora exige uma conta autenticada. Clientes entram por links de cadastro individuais, criados pela administração e válidos por sete dias; não há cadastro público nem envio automático do convite por e-mail. Sessões legadas sem vínculo com uma empresa não criam espaços automaticamente. O servidor aplica permissões por empresa e por perfil. Espelho do Líder e Termômetro só mostram médias do time depois do encerramento e de pelo menos cinco respostas válidas. A comparação do Raio X da Comunicação exige que as duas pessoas concluam e autorizem o compartilhamento.
+As seis experiências da implementação original foram retiradas integralmente das telas, páginas, APIs e componentes. URLs públicas antigas redirecionam para os cursos e ações antigas retornam 410. As tabelas antigas permanecem apenas como arquivo, sem consulta pela aplicação atual; não houve descarte de registros históricos no D1.
+
+Resultados agora são de cursos: aulas, atividades, última nota de prova, média das práticas, nota geral, histórico de tentativas, certificados e feedbacks escritos pelo cliente. Clientes consultam seus próprios registros; a administração master pode pesquisar clientes por nome, e-mail ou empresa e abrir seus resultados. Não há exposição de respostas individuais na consulta administrativa.
 
 ## Estado visual da página inicial
 
@@ -50,3 +52,15 @@ O perfil usa /api/profile e /api/profile/photo, com identidade derivada da sess�
 E-mail e senha exigem confirmação da senha atual e proteção contra repetidas tentativas. Senhas usam o hash existente; alterações acontecem em transação com rotação da sessão e encerramento das demais sessões. Trocar e-mail atualiza os membros pertencentes ao mesmo ID, preservando notas, cursos e papéis, e rejeita endereços em uso e endereços administrativos reservados. Eventos de alteração não incluem senhas ou tokens. A permissão administrativa local é preservada por ID para evitar mudança de acesso ao editar o e-mail. O cadastro continua exclusivo por convite, sem criação de contas pelo perfil. E-mail novo não recebe verificação automática por mensagem.
 
 Contas sem credenciais locais podem editar foto; e-mail e senha permanecem sob responsabilidade do provedor de login, com indicação explícita na tela. As duas tabelas auxiliares são aditivas e inicializadas pelo mecanismo existente de ensureAuthSchema. Checagem de tipos integral e lint dos novos arquivos aprovados; compilação de produção no fluxo de publicação. Nenhuma conta real teve foto, e-mail ou senha alterados para conferência.
+
+## Resultados da academia — 7 de outubro de 2026
+
+Esta atualização substitui as descrições anteriores de persistência somente local. O progresso completo agora é sincronizado no D1 por membro e empresa, com cópia no navegador e recuperação no login. A união preserva aulas e tentativas; revisões e identificador de escrita protegem contra sobrescritas concorrentes. Falhas de recuperação impedem o envio de um histórico vazio e mostram ação para tentar novamente. Notas antigas sem respostas detalhadas ficam preservadas em snapshots; o painel distingue resumo antigo de registro completo e não inventa atividades, notas gerais ou certificados.
+
+Notas de atividades e provas são recalculadas no servidor com o currículo correspondente. A prova exige aulas e atividades anteriores; somente conclusão validada emite um certificado único por membro, empresa e curso. Certificados são registros persistidos e podem ser abertos pelo próprio aluno ou administrador, com impressão/salvamento em PDF. Não são criados retroativamente a partir de notas resumidas sem detalhes.
+
+A nota geral de um curso é a média simples entre a média das últimas práticas atuais realizadas e a última prova atual. A nota geral do cliente é a média dessas notas por curso. Sem prova e práticas, a nota geral fica indisponível. A aprovação continua dependendo da prova ≥ 8 e de todas as aulas e práticas.
+
+Feedback fica disponível em Meu desempenho: curso iniciado, avaliação de 1 a 5 e comentário de até 2.000 caracteres. A pessoa pode atualizar seu próprio feedback; o administrador apenas consulta. As APIs /api/results, /api/academy/progress, /api/academy/feedback e /api/academy/certificates/[id] validam sessão e vínculo no servidor. Alterações exigem origem do próprio site. A migração 0006 é aditiva, com quatro tabelas próprias da academia, também inicializadas pelo mecanismo runtime existente.
+
+Componentes antigos e ações de experiências foram removidos. O layout, imagens e estilos da LP foram mantidos; somente textos que descreviam recursos retirados (FAQ, privacidade e página empresarial) foram corrigidos para o produto atual. Checagem integral de tipos e lint dos arquivos alterados aprovados; compilação de produção pelo fluxo Sites. Nenhum dado de cliente foi criado para conferência e nenhuma conta real foi alterada.
