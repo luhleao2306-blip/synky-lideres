@@ -1,10 +1,12 @@
 import type { StudyLesson, StudyQuestion } from "./academy-types";
+import { expandedLeadershipLabs } from "./academy-expansion";
 
 // Casos autorais com restrições concorrentes e alternativas plausíveis.
 // Cada caso possui quatro decisões: análise, ação, acompanhamento e transferência.
 type Choice = [prompt: string, answer: string, alternatives: [string, string, string], rationale: string];
 type Lab = { scenario: string; guidance: string; choices: [Choice, Choice, Choice, Choice] };
 export const leadershipLabs: Record<string, Lab> = {
+  ...expandedLeadershipLabs,
   criterios: {
     scenario: "Você precisa escolher uma ferramenta em cinco dias. A opção A custa menos e é preferida pelo time, mas sua integração obrigatória ainda não foi demonstrada. A opção B integra corretamente, mas exige treinamento. O orçamento comporta ambas; a entrega depende da integração.",
     guidance: "Separe viabilidade de preferência. Uma pontuação alta em conforto ou preço não compensa um requisito obrigatório não atendido. Trate a integração desconhecida como informação pendente, não como aprovação ou reprovação definitiva; estabeleça um prazo curto para verificá-la.",

@@ -5,8 +5,8 @@ import { attemptStudyQuestions, courseCompleted, emptyStudyProgress, isCurrentSt
 const answers = id => Object.fromEntries(studyQuiz(id).questions.map(q => [q.id,q.correct]));
 const attempt = (id,quizId,input=answers(quizId)) => ({id,quizId,at:'2026-10-07T12:00:00Z',answers:input,questionIds:studyQuiz(quizId).questions.map(q=>q.id),...scoreStudyQuiz(quizId,input)});
 const allPractices = () => studyPractices.map(p=>attempt(p.id,p.id));
-test('eight courses, forty deepened lessons, twenty activities and twenty exam questions per course',()=>{
- assert.equal(studyCourses.length,8);assert.equal(allStudyLessons.length,40);assert.equal(finalStudyQuestions.length,20);
+test('twenty-five courses, 125 lessons, twenty activities and twenty exam questions per course',()=>{
+ assert.equal(studyCourses.length,25);assert.equal(allStudyLessons.length,125);assert.equal(finalStudyQuestions.length,20);
  for(const course of studyCourses){const practices=studyPractices.filter(p=>p.courseId===course.id);assert.equal(practices.length,20);assert.equal(practices.filter(p=>p.kind==='case').length,5);assert.equal(studyQuiz(course.id).questions.length,20);for(const p of practices)assert.equal(p.questions.length,p.kind==='case'?4:2);for(const l of course.lessons){assert.ok(l.sections.length>=5);assert.equal(practices.filter(p=>p.lessonId===l.id).length,4);}}
  const exams=[...finalStudyQuestions,...studyCourses.flatMap(c=>studyQuiz(c.id).questions)];
  for(const q of exams){assert.equal(q.options.length,4);assert.equal(new Set(q.options).size,4);assert.ok(allStudyLessons.some(l=>l.id===q.lessonId));assert.ok(q.scenario.length>100);assert.ok(q.correct>=0&&q.correct<4);assert.ok(q.explanation.length>30);}
@@ -23,11 +23,12 @@ test('studying only is insufficient; all current course practices must be submit
  p.studied=allStudyLessons.map(l=>l.id);assert.equal(quizUnlocked(p,'decisoes'),false);
  p.attempts=allPractices().filter(a=>studyPractices.find(x=>x.id===a.quizId).courseId==='decisoes');assert.equal(quizUnlocked(p,'decisoes'),true);assert.equal(quizUnlocked(p,'mudancas'),false);p.attempts.pop();assert.equal(quizUnlocked(p,'decisoes'),false);
 });
-test('final requires all lessons, current practices and latest course grades of at least eight',()=>{
- const p={...emptyStudyProgress(),studied:allStudyLessons.map(l=>l.id),attempts:allPractices()};assert.equal(quizUnlocked(p,FINAL_QUIZ_ID),false);
- p.attempts.push(...studyCourses.map(c=>attempt('exam:'+c.id,c.id)));assert.equal(quizUnlocked(p,FINAL_QUIZ_ID),true);assert.equal(courseCompleted(p,'decisoes'),true);
- const below=answers('decisoes');for(const q of studyQuiz('decisoes').questions.slice(0,5))below[q.id]=(q.correct+1)%4;p.attempts.push(attempt('retry','decisoes',below));assert.equal(quizUnlocked(p,FINAL_QUIZ_ID),false);
- const passing=answers('decisoes');for(const q of studyQuiz('decisoes').questions.slice(0,4))passing[q.id]=(q.correct+1)%4;p.attempts.push(attempt('pass','decisoes',passing));assert.equal(quizUnlocked(p,FINAL_QUIZ_ID),true);p.studied.pop();assert.equal(quizUnlocked(p,FINAL_QUIZ_ID),false);
+test('each course exam depends only on its own lessons and activities, and the overall exam is retired',()=>{
+ const course=studyCourses.find(c=>c.id==='estrategia');const p={...emptyStudyProgress(),studied:course.lessons.map(l=>l.id),attempts:allPractices().filter(a=>studyPractices.find(x=>x.id===a.quizId).courseId===course.id)};
+ assert.equal(quizUnlocked(p,course.id),true);assert.equal(quizUnlocked(p,'decisoes'),false);assert.equal(quizUnlocked(p,FINAL_QUIZ_ID),false);assert.equal(studyQuiz(FINAL_QUIZ_ID),null);
+ p.attempts.push(attempt('exam',course.id));assert.equal(courseCompleted(p,course.id),true);
+ const below=answers(course.id);for(const q of studyQuiz(course.id).questions.slice(0,5))below[q.id]=(q.correct+1)%4;p.attempts.push(attempt('retry',course.id,below));assert.equal(courseCompleted(p,course.id),false);
+ const passing=answers(course.id);for(const q of studyQuiz(course.id).questions.slice(0,4))passing[q.id]=(q.correct+1)%4;p.attempts.push(attempt('pass',course.id,passing));assert.equal(courseCompleted(p,course.id),true);p.studied.pop();assert.equal(quizUnlocked(p,course.id),false);
 });
 test('historical question sets preserve notes and corrections without satisfying new requirements',()=>{
  const p=emptyStudyProgress();for(const [quizId,sets] of Object.entries(historicalStudyQuestions))for(const [i,qs] of sets.entries())p.attempts.push({id:quizId+':'+i,quizId,at:'2026-10-02T12:00:00Z',answers:Object.fromEntries(qs.map(q=>[q.id,q.correct])),grade:0,correct:0,total:0});

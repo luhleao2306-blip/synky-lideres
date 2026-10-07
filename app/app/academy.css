@@ -413,3 +413,32 @@
 @media(max-width:1000px){.academy-shell .ac-practical-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.academy-shell .ac-practice-course{grid-template-columns:200px 1fr}.academy-shell .ac-practice-course>div{padding:26px}}
 @media(max-width:650px){.academy-shell .ac-practical-grid{grid-template-columns:1fr;gap:16px}.academy-shell .ac-practice-course{grid-template-columns:1fr}.academy-shell .ac-practice-course>img{height:180px;min-height:0}.academy-shell .ac-practice-course>div{padding:23px}.academy-shell .ac-practice-course h2{font-size:26px}.academy-shell .ac-practice-course .ac-actions{display:grid}.academy-shell .ac-course-tabs button{max-width:220px}.academy-shell .ac-practical-card{padding:23px}.academy-shell .ac-practical-card h3{font-size:23px}.academy-shell .ac-practical-card>p{font-size:14px}.academy-shell .ac-scenario{padding:18px}.academy-shell .ac-scenario p{font-size:14px}.academy-shell .ac-course-stages{font-size:11px;gap:10px}.academy-shell .ac-segments{flex-wrap:wrap}}
 @media(prefers-reduced-motion:reduce){.academy-shell .ac-course-tabs button,.academy-shell .ac-practical-card{transition:none}.academy-shell .ac-course-tabs button:hover,.academy-shell .ac-practical-card:hover{transform:none}}
+
+/* Provas independentes e notas dos cursos iniciados. */
+.academy-shell .ac-performance-grid,.academy-shell .ac-exams-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin:25px 0 35px}
+.academy-shell .ac-performance-card,.academy-shell .ac-exam-course-card{background:#fff;border:1px solid var(--ac-line);border-radius:19px;padding:26px;min-width:0;transition:border-color .2s,transform .2s,box-shadow .2s}
+.academy-shell .ac-performance-card:hover,.academy-shell .ac-exam-course-card:hover{border-color:#89b79e;transform:translateY(-3px);box-shadow:0 12px 28px #1649360a}
+.academy-shell .ac-performance-card header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px}
+.academy-shell .ac-course-badge{display:inline-grid;place-items:center;width:40px;height:40px;background:var(--ac-deep);color:white;border-radius:12px;font-size:14px;font-weight:600}
+.academy-shell .ac-performance-card h2,.academy-shell .ac-exam-course-card h2{font-size:24px;letter-spacing:-.5px;line-height:1.25;margin:15px 0;overflow-wrap:anywhere}
+.academy-shell .ac-performance-card p,.academy-shell .ac-exam-course-card p{font-size:13px;color:var(--ac-muted)}
+.academy-shell .ac-performance-card dl{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0 14px}
+.academy-shell .ac-performance-card dl>div{background:#eff7f2;border-radius:12px;padding:14px}
+.academy-shell .ac-performance-card dt{font-size:11px;line-height:1.6;color:var(--ac-muted)}
+.academy-shell .ac-performance-card dd{font-size:27px;font-weight:600;color:var(--ac-ink);margin:9px 0 0}
+.academy-shell .ac-performance-card dd small{font-size:12px;font-weight:400;margin-left:5px}
+.academy-shell .ac-performance-card>small,.academy-shell .ac-exam-course-card>small{display:block;font-size:11px;line-height:1.7;color:var(--ac-muted)}
+.academy-shell .ac-performance-card footer{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:23px;padding-top:18px;border-top:1px solid var(--ac-line)}
+.academy-shell .ac-performance-card footer .ac-button{font-size:12px;padding:11px 13px}
+.academy-shell .ac-performance-card footer .ac-text-button{font-size:11px}
+.academy-shell .ac-exam-course-card{display:flex;flex-direction:column;align-items:flex-start}
+.academy-shell .ac-exam-course-card>.ac-status{margin:15px 0 0}
+.academy-shell .ac-exam-course-card h2{flex:1}
+.academy-shell .ac-exam-course-card>strong{margin-top:17px;font-size:15px;color:var(--ac-green)}
+.academy-shell .ac-exam-course-card>.ac-button{margin-top:23px;font-size:12px;width:100%;justify-content:center}
+.academy-shell .ac-archived-grades{background:white;border:1px solid var(--ac-line);border-radius:15px;padding:23px;margin:28px 0}
+.academy-shell .ac-archived-grades summary{display:flex;justify-content:space-between;align-items:center;gap:14px;cursor:pointer;font-size:14px;font-weight:600;color:var(--ac-ink)}
+.academy-shell .ac-archived-grades p{font-size:13px;color:var(--ac-muted);line-height:1.7;margin:20px 0}
+@media(max-width:1000px){.academy-shell .ac-performance-grid,.academy-shell .ac-exams-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.academy-shell .ac-performance-grid,.academy-shell .ac-exams-grid{grid-template-columns:1fr;gap:15px}.academy-shell .ac-performance-card,.academy-shell .ac-exam-course-card{padding:23px}.academy-shell .ac-performance-card dl{gap:10px}}
+@media(prefers-reduced-motion:reduce){.academy-shell .ac-performance-card,.academy-shell .ac-exam-course-card{transition:none}.academy-shell .ac-performance-card:hover,.academy-shell .ac-exam-course-card:hover{transform:none}}

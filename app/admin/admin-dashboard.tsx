@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import BrandLogo from "@/components/brand-logo";
 import ResultsPanel from "@/app/app/results-panel";
+import { studyCourses } from "@/app/app/academy-curriculum";
 import { ArrowDownRight, ArrowRight, Building2, CalendarDays, Copy, GraduationCap, History, LayoutDashboard, LogOut, RefreshCw, Search, ShieldCheck, UsersRound, Link2 } from "lucide-react";
 
 type AdminData = {
@@ -18,6 +19,15 @@ type AdminData = {
 };
 type Tab = "overview" | "clients" | "activity" | "access";
 const dateTime = (value: string) => new Date(value).toLocaleString("pt-BR", { dateStyle: "medium", timeStyle: "short" });
+function CourseGrades({ raw }: { raw: string }) {
+  let grades: { courseId: string; grade: number | null; complete: boolean }[] = [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (Array.isArray(parsed)) grades = parsed.filter(item => item && typeof item.courseId === "string" && typeof item.complete === "boolean" && (item.grade === null || (typeof item.grade === "number" && item.grade >= 0 && item.grade <= 10)));
+  } catch { return <span>Resumo de cursos indisponível</span>; }
+  const evaluated = grades.filter(item => item.grade !== null);
+  return <details><summary>{grades.filter(item => item.complete).length} cursos concluídos · {evaluated.length} provas realizadas</summary>{evaluated.length ? evaluated.map(item => <p key={item.courseId}>{studyCourses.find(course => course.id === item.courseId)?.title || item.courseId}: <strong>{item.grade!.toLocaleString("pt-BR")} / 10</strong></p>) : <p>As notas aparecem após a prova de cada curso.</p>}</details>;
+}
 
 export default function AdminDashboard({ adminEmail }: { adminEmail: string }) {
   const [tab, setTab] = useState<Tab>("overview");
@@ -32,6 +42,18 @@ export default function AdminDashboard({ adminEmail }: { adminEmail: string }) {
   const [inviteUrl, setInviteUrl] = useState("");
   const [copied, setCopied] = useState(false);
 
+  const load = useCallback(async () => {
+    setBusy(true); setError("");
+    try {
+      const response = await fetch(`/api/admin?q=${encodeURIComponent(search)}&offset=${offset}`, { cache: "no-store" });
+      const body = await response.json() as AdminData & { error?: string };
+      if (!response.ok) throw new Error(body.error || "Não foi possível carregar a administração.");
+      setData(body as AdminData);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Falha de conexão."); }
+    finally { setBusy(false); }
+  }, [offset, search]);
+  useEffect(() => { const timer = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timer); }, [load]);
+
   async function createInvite(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setInviteBusy(true); setInviteError(""); setInviteUrl("");
     const form = new FormData(event.currentTarget);
@@ -44,17 +66,7 @@ export default function AdminDashboard({ adminEmail }: { adminEmail: string }) {
     finally { setInviteBusy(false); }
   }
 
-  const load = useCallback(async () => {
-    setBusy(true); setError("");
-    try {
-      const response = await fetch(`/api/admin?q=${encodeURIComponent(search)}&offset=${offset}`, { cache: "no-store" });
-      const body = await response.json() as AdminData & { error?: string };
-      if (!response.ok) throw new Error(body.error || "Não foi possível carregar a administração.");
-      setData(body as AdminData);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Falha de conexão."); }
-    finally { setBusy(false); }
-  }, [offset, search]);
-  useEffect(() => { void load(); }, [load]);
+
 
   return <main className="admin-shell">
     <a className="admin-skip" href="#admin-content">Pular para o conteúdo</a>
@@ -88,7 +100,7 @@ export default function AdminDashboard({ adminEmail }: { adminEmail: string }) {
         </div>
         <section className="admin-card admin-recent"><div className="admin-card-heading"><div><span className="admin-eyebrow">REGISTROS DO SISTEMA</span><h2>Atividade recente</h2></div><button onClick={() => setTab("activity")}>Ver atividades <ArrowRight size={15}/></button></div><Events events={data?.events.slice(0, 6) || []} loading={busy && !data}/></section>
       </>}
-      {tab === "clients" && <section className="admin-results"><div className="admin-section-heading"><div><span className="admin-eyebrow">ACESSO INDIVIDUAL</span><h2>Clientes e resultados</h2><p>Busque uma pessoa e consulte os registros que o sistema permite visualizar.</p></div></div><ResultsPanel isMaster isGuest={false} companyId=""/><section className="admin-card admin-learning-progress"><div className="admin-card-heading"><div><span className="admin-eyebrow">ACADEMIA DE LIDERANÇA</span><h2>Progresso de cursos</h2></div></div><p className="admin-progress-note">Resumo sincronizado do painel de estudos. A pessoa pode continuar usando o conteúdo salvo no dispositivo; a nota corresponde ao resultado registrado na conta.</p>{busy&&!data?<Loading/>:data?.learningProgress?.length?<div className="admin-progress-list">{data.learningProgress.map(row=><article key={`${row.email}-${row.companyName}`}><div><strong>{row.name}</strong><small>{row.email} · {row.companyName}</small></div><span>{row.studiedLessons} de {row.totalLessons} aulas</span><span>{row.finalGrade===null?"Prova final pendente":`Prova final: ${row.finalGrade.toLocaleString("pt-BR")}/10`}</span><time>{dateTime(row.updatedAt)}</time></article>)}</div>:<Empty text="O progresso aparecerá depois que uma pessoa entrar e registrar aulas ou avaliações na academia."/>}</section></section>}
+      {tab === "clients" && <section className="admin-results"><div className="admin-section-heading"><div><span className="admin-eyebrow">ACESSO INDIVIDUAL</span><h2>Clientes e resultados</h2><p>Busque uma pessoa e consulte os registros que o sistema permite visualizar.</p></div></div><ResultsPanel isMaster isGuest={false} companyId=""/><section className="admin-card admin-learning-progress"><div className="admin-card-heading"><div><span className="admin-eyebrow">ACADEMIA DE LIDERANÇA</span><h2>Progresso de cursos</h2></div></div><p className="admin-progress-note">Resumo sincronizado do painel de estudos. A pessoa pode continuar usando o conteúdo salvo no dispositivo; a nota corresponde ao resultado registrado na conta.</p>{busy&&!data?<Loading/>:data?.learningProgress?.length?<div className="admin-progress-list">{data.learningProgress.map(row=><article key={`${row.email}-${row.companyName}`}><div><strong>{row.name}</strong><small>{row.email} · {row.companyName}</small></div><span>{row.studiedLessons} de {row.totalLessons} aulas</span><CourseGrades raw={row.courseProgress}/><time>{dateTime(row.updatedAt)}</time></article>)}</div>:<Empty text="O progresso aparecerá depois que uma pessoa entrar e registrar aulas ou avaliações na academia."/>}</section></section>}
       {tab === "activity" && <section className="admin-card admin-activity"><div className="admin-section-heading"><div><span className="admin-eyebrow">EVENTOS REGISTRADOS NOS DADOS DO PRODUTO</span><h2>Atividade recente</h2><p>Eventos que já são gravados como parte das experiências da plataforma.</p></div></div><Events events={data?.events || []} loading={busy && !data}/></section>}
       {tab === "access" && <section className="admin-access-grid"><div className="admin-card"><div className="admin-section-heading"><div><span className="admin-eyebrow">ACESSO CONTROLADO</span><h2>Convidar uma organização</h2><p>O link libera um cadastro para o e-mail informado e expira em sete dias. Compartilhe-o diretamente com a pessoa.</p></div></div><form className="admin-invite-form" onSubmit={createInvite}><label htmlFor="companyName">Nome da organização</label><input id="companyName" name="companyName" maxLength={120} minLength={2} required placeholder="Ex.: Empresa Exemplo"/><label htmlFor="inviteEmail">E-mail corporativo do cliente</label><input id="inviteEmail" name="inviteEmail" type="email" maxLength={254} required placeholder="pessoa@empresa.com.br"/><button type="submit" disabled={inviteBusy}>{inviteBusy ? "Gerando link…" : "Gerar link de cadastro"}<Link2 size={16}/></button></form>{inviteError && <p className="admin-form-error" role="alert">{inviteError}</p>}{inviteUrl && <div className="admin-generated-link"><strong>Link pronto para compartilhar</strong><div><input readOnly value={inviteUrl} aria-label="Link de cadastro"/><button onClick={async()=>{await navigator.clipboard.writeText(inviteUrl);setCopied(true);setTimeout(()=>setCopied(false),1800)}}><Copy size={15}/>{copied?"Copiado":"Copiar"}</button></div><small>O link é de uso único e válido por 7 dias.</small></div>}</div><div className="admin-card"><div className="admin-card-heading"><div><span className="admin-eyebrow">CONVITES RECENTES</span><h2>Estado dos acessos</h2></div></div>{busy&&!data?<Loading/>:data?.registrationInvites?.length?<div className="admin-invite-list">{data.registrationInvites.map(invite=><article key={`${invite.email}-${invite.createdAt}`}><span className={`admin-invite-state ${invite.usedAt?"used":"pending"}`}>{invite.usedAt?"Ativado":"Pendente"}</span><strong>{invite.companyName}</strong><small>{invite.email}</small><time>{invite.usedAt?`Ativado ${dateTime(invite.usedAt)}`:`Expira ${dateTime(invite.expiresAt)}`}</time></article>)}</div>:<Empty text="Nenhum convite de cadastro gerado ainda."/>}</div><div className="admin-card admin-auth-log"><div className="admin-card-heading"><div><span className="admin-eyebrow">SEGURANÇA</span><h2>Eventos de acesso</h2></div></div>{busy&&!data?<Loading/>:data?.authEvents?.length?<div className="admin-events">{data.authEvents.map((event,index)=><article key={`${event.eventAt}-${event.eventType}-${index}`}><span className="admin-event-dot"/><div><strong>{event.eventType}</strong><p>{event.email||"E-mail não informado"}</p></div><time>{dateTime(event.eventAt)}</time></article>)}</div>:<Empty text="Ainda não há eventos de autenticação."/>}</div></section>}
     </div>

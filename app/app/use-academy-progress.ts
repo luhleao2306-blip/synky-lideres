@@ -3,7 +3,7 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { JourneyStorageContext } from "./use-journey-store";
 import { emptyStudyProgress, parseStudyProgress, type StudyProgress } from "./academy-model";
 import { allStudyLessons, FINAL_QUIZ_ID, studyCourses } from "./academy-curriculum";
-import { courseCompleted, latestCurrentStudyAttempt } from "./academy-model";
+import { courseCompleted, latestCurrentStudyAttempt, latestStudyAttempt } from "./academy-model";
 
 export default function useAcademyProgress(key: string, companyId: string) {
   const override = useContext(JourneyStorageContext);
@@ -26,7 +26,7 @@ export default function useAcademyProgress(key: string, companyId: string) {
     if (loading || blocked || !ready.current || override) return;
     const timer = window.setTimeout(() => {
       const courseProgress = studyCourses.map(course => ({ courseId: course.id, complete: courseCompleted(progress, course.id), grade: latestCurrentStudyAttempt(progress, course.id)?.grade ?? null, attempts: progress.attempts.filter(attempt => attempt.quizId === course.id).length }));
-      const finalGrade = latestCurrentStudyAttempt(progress, FINAL_QUIZ_ID)?.grade ?? null;
+      const finalGrade = latestStudyAttempt(progress, FINAL_QUIZ_ID)?.grade ?? null;
       void fetch("/api/academy/progress", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ companyId, studiedLessons: progress.studied.length, totalLessons: allStudyLessons.length, courseProgress, finalGrade }) }).catch(() => undefined);
     }, 700);
     return () => window.clearTimeout(timer);

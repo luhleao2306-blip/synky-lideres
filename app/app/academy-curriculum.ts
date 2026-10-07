@@ -1,6 +1,7 @@
 import { additionalLessons, deepenExistingLesson, newStudyCourses } from "./academy-content";
 import { advancedQuestions, deepenLeadershipLesson } from "./academy-challenges";
 import { advancedFinalQuestions } from "./academy-final";
+import { expandedStudyCourses } from "./academy-expansion";
 import type { StudyCourse, StudyQuestion } from "./academy-types";
 export type { StudyCourse, StudyLesson, StudyQuestion } from "./academy-types";
 const q = (id: string, lessonId: string, prompt: string, options: string[], correct: number, explanation: string): StudyQuestion => ({ id, lessonId, prompt, options, correct, explanation });
@@ -69,7 +70,7 @@ const previousStudyCourses: StudyCourse[] = [
   ...originalStudyCourses.map(course => ({ ...course, lessons: [...course.lessons.map(deepenExistingLesson), ...additionalLessons[course.id]] })),
   ...newStudyCourses,
 ];
-export const studyCourses: StudyCourse[] = previousStudyCourses.map(course => ({ ...course, lessons: course.lessons.map(deepenLeadershipLesson) }));
+export const studyCourses: StudyCourse[] = [...previousStudyCourses, ...expandedStudyCourses].map(course => ({ ...course, lessons: course.lessons.map(deepenLeadershipLesson) }));
 export const allStudyLessons = studyCourses.flatMap(course => course.lessons);
 export const studyPractices = studyCourses.flatMap(course => course.lessons.flatMap(lesson => {
   const application = advancedQuestions(lesson);
@@ -92,16 +93,18 @@ export const historicalStudyQuestions: Record<string, StudyQuestion[][]> = Objec
     [...course.lessons.flatMap(lesson => [lesson.activity, ...(lesson.additionalActivities || [])]), course.transfer],
     ...(originalStudyCourses.find(item => item.id === course.id) ? [[...originalStudyCourses.find(item => item.id === course.id)!.lessons.map(lesson => lesson.activity), course.transfer]] : []),
   ]]),
-  [FINAL_QUIZ_ID, [previousStudyCourses.flatMap(course => course.lessons.map(lesson => lesson.final)), originalStudyCourses.flatMap(course => course.lessons.map(lesson => lesson.final))]],
+  [FINAL_QUIZ_ID, [advancedFinalQuestions, previousStudyCourses.flatMap(course => course.lessons.map(lesson => lesson.final)), originalStudyCourses.flatMap(course => course.lessons.map(lesson => lesson.final))]],
   ...previousStudyCourses.flatMap(course => course.lessons.flatMap(lesson => [lesson.activity, ...(lesson.additionalActivities || [])].map(question => [`pratica:${course.id}:${question.id}`, [[question]]]))),
 ]);
 export const legacyStudyQuestionIds = Object.fromEntries(Object.entries(historicalStudyQuestions).map(([id, sets]) => [id, sets[sets.length - 1].map(question => question.id)]));
 export function studyQuiz(id: string) {
-  if (id === FINAL_QUIZ_ID) return { id, title: "Avaliação final de liderança", questions: finalStudyQuestions, course: null, lessons: allStudyLessons, practice: false };
+  // A prova geral foi aposentada. Os conjuntos antigos permanecem somente para leitura do histórico.
+  if (id === FINAL_QUIZ_ID) return null;
   const course = studyCourses.find(item => item.id === id);
-  if (course) return { id, title: `Avaliação · ${course.title}`, questions: course.lessons.flatMap(advancedQuestions), course, lessons: course.lessons, practice: false };
+  if (course) return { id, title: `Prova final · ${course.title}`, questions: course.lessons.flatMap(advancedQuestions), course, lessons: course.lessons, practice: false };
   const practice = studyPractices.find(item => item.id === id);
   if (!practice) return null;
   const practiceCourse = studyCourses.find(item => item.id === practice.courseId)!;
   return { id, title: practice.title, questions: practice.questions, course: practiceCourse, lessons: practiceCourse.lessons.filter(lesson => lesson.id === practice.lessonId), practice: true };
 }
+export function studyQuizTitle(id: string) { return id === FINAL_QUIZ_ID ? "Avaliação geral anterior (arquivada)" : studyQuiz(id)?.title || id; }

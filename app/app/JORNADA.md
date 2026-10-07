@@ -250,3 +250,14 @@ Os oito cursos mantêm cinco aulas cada, ampliadas com cenário, restrições e 
 As práticas exigem estudo da aula; a avaliação do curso exige todas as aulas e práticas atuais; nota mínima 8 conclui o curso. A prova final exige os oito cursos concluídos. Versões anteriores de avaliações e práticas preservam notas, rascunhos e correções, mas não substituem os requisitos novos. O resumo administrativo considera a conclusão completa e a nota da versão atual. Nenhum dado real foi criado ou removido.
 
 Verificação: sete testes de conteúdo, cálculo, bloqueios, isolamento e compatibilidade do histórico passaram. Na prévia com armazenamento descartável, conferidos menu, filtro de casos, estudo, liberação da prática, validação de respostas em branco, nota calculada, correção e prova final de vinte questões. Tela de 390 px sem transbordamento horizontal. A rota de prévia é removida antes de publicar. Correções exclusivamente de tipos no cadastro e no buffer de hash também permitem a checagem integral do projeto, sem alterar esses fluxos.
+
+
+## 2026-10-07 — Vinte e cinco cursos e provas independentes
+
+A trilha atual reúne 25 cursos, 125 aulas, 500 atividades e 25 provas de vinte questões. Foram acrescentados cursos de estratégia, indicadores, capacidade, conversas individuais, perguntas de desenvolvimento, negociação, influência, inclusão, trabalho distribuído, talentos, sucessão, desempenho, reconhecimento, crises, ética, privacidade e melhoria contínua. Cada aula acrescentada tem conteúdo, exemplo, aplicação, exercícios e caso comentado.
+
+Não existe mais prova geral ativa. Uma prova de curso é liberada somente pelo estudo das suas cinco aulas e envio das suas vinte atividades, independentemente de qualquer outro curso. A aprovação permanece em 8. A aba Provas dos cursos lista avaliações iniciadas, liberadas ou todas. Links antigos da prova geral abrem o índice; respostas e notas anteriores continuam legíveis e exportáveis.
+
+Meu desempenho inclui apenas cursos iniciados por acesso à aula ou às atividades, além de progresso já registrado em versões anteriores. Há filtros por curso e conclusão, nota separada de práticas e prova, gráfico das provas com resultados existentes e histórico. A propriedade opcional started é compatível com o armazenamento anterior; IDs e notas dos oito cursos existentes foram preservados. O limite de histórico passa a dez mil tentativas para comportar novas atividades e repetições. A administração apresenta notas por curso no resumo sincronizado, preservando a nota geral antiga apenas como registro histórico.
+
+Mudanças limitadas à academia, seu resumo administrativo e documentação. Landing page, autenticação, imagens e estilos compartilhados não foram alterados. Checagem integral de tipos aprovada; compilação de produção faz parte do fluxo de publicação.
