@@ -74,7 +74,9 @@ let schemaPromise: Promise<void> | null = null;
 
 export async function ensureAuthSchema(db: D1Database = requiredDb()): Promise<void> {
   if (!schemaPromise) {
-    schemaPromise = Promise.all(schema.map((sql) => db.prepare(sql).run())).then(() => undefined).catch((error) => {
+    schemaPromise = (async () => {
+      for (const sql of schema) await db.prepare(sql).run();
+    })().catch((error) => {
       schemaPromise = null;
       throw error;
     });
