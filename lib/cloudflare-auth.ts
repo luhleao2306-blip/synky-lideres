@@ -75,7 +75,13 @@ let schemaPromise: Promise<void> | null = null;
 export async function ensureAuthSchema(db: D1Database = requiredDb()): Promise<void> {
   if (!schemaPromise) {
     schemaPromise = (async () => {
-      for (const sql of schema) await db.prepare(sql).run();
+      for (let index = 0; index < schema.length; index += 1) {
+        try { await db.prepare(schema[index]).run(); }
+        catch (error) {
+          console.error("auth schema step failed", index, error instanceof Error ? error.message : String(error));
+          throw error;
+        }
+      }
     })().catch((error) => {
       schemaPromise = null;
       throw error;

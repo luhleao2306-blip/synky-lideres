@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     const token = await issueSession(user.id);
     return Response.json({ ok: true, user: { email: user.email, name: user.name } }, { headers: { "Set-Cookie": sessionCookie(token, request.url), "Cache-Control": "no-store" } });
   } catch (error) {
-    console.error("auth login failed", error);
+    console.error("auth login failed", error instanceof Error ? error.message : String(error));
     return Response.json({ error: "Não foi possível entrar agora. Tente novamente." }, { status: 503 });
   }
 }
