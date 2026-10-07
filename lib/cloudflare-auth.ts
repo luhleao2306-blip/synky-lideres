@@ -188,15 +188,23 @@ export async function seedBootstrapAdmin(db: D1Database = requiredDb()): Promise
   const password = env.SYNKY_ADMIN_INITIAL_PASSWORD;
   if (!password || password.length < 12) return;
   const email = "admin@synky.com.br";
-  const existing = await db.prepare("SELECT id FROM synky_auth_users WHERE email=? LIMIT 1").bind(email).first<{ id: string }>();
-  if (existing) return;
-  const { salt, hash } = await createPasswordHash(password);
-  const now = new Date().toISOString();
-  const userId = crypto.randomUUID();
-  await db.prepare(`INSERT INTO synky_auth_users(id,email,name,password_salt,password_hash,created_at,updated_at)
-    VALUES(?,?,?,?,?,?,?)`).bind(userId, email, "Administrador Synky", salt, hash, now, now).run();
-  await db.prepare("INSERT INTO synky_auth_events(id,event_type,user_id,email,created_at) VALUES(?,?,?,?,?)")
-    .bind(crypto.randomUUID(), "Conta administrativa inicializada", userId, email, now).run();
+  let stage = "lookup";
+  try {
+    const existing = await db.prepare("SELECT id FROM synky_auth_users WHERE email=? LIMIT 1").bind(email).first<{ id: string }>();
+    if (existing) return;
+    stage = "password-hash";
+    const { salt, hash } = await createPasswordHash(password);
+    const now = new Date().toISOString();
+    const userId = crypto.randomUUID();
+    stage = "create-account";
+    await db.prepare(`INSERT INTO synky_auth_users(id,email,name,password_salt,password_hash,created_at,updated_at)
+      VALUES(?,?,?,?,?,?,?)`).bind(userId, email, "Administrador Synky", salt, hash, now, now).run();
+    stage = "audit-event";
+    await db.prepare("INSERT INTO synky_auth_events(id,event_type,user_id,email,created_at) VALUES(?,?,?,?,?)")
+      .bind(crypto.randomUUID(), "Conta administrativa inicializada", userId, email, now).run();
+  } catch {
+    throw new Error(`ADMIN_BOOTSTRAP_${stage}`);
+  }
 }
 
 export function sameOrigin(request: Request): boolean {

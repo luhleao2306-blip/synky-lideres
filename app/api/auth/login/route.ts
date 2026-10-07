@@ -47,6 +47,7 @@ export async function POST(request: Request) {
     return Response.json({ ok: true, user: { email: user.email, name: user.name } }, { headers: { "Set-Cookie": sessionCookie(token, request.url), "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("auth login failed", error instanceof Error ? error.message : String(error));
-    return Response.json({ error: "Não foi possível entrar agora. Tente novamente.", diagnostic: stage }, { status: 503 });
+    const diagnostic = error instanceof Error && error.message.startsWith("ADMIN_BOOTSTRAP_") ? error.message : stage;
+    return Response.json({ error: "Não foi possível entrar agora. Tente novamente.", diagnostic }, { status: 503 });
   }
 }
